@@ -9,6 +9,10 @@
 #include <stdlib.h>
 #include <math.h>
 
+#ifdef _OPENMP
+#include <omp.h>
+#endif
+
 #include "mgcal.h"
 
 void
@@ -19,6 +23,8 @@ example_dipole (FILE *stream, const int nx, const int ny, const int nz, const do
 	source		*s;
 	mgcal_func	*f;
 
+	double		t;
+
 	g = grid_new (nx, ny, nz, x, y, z);
 	s = source_new ();
 	source_set_position (s, 0., 0., -2.);
@@ -26,22 +32,22 @@ example_dipole (FILE *stream, const int nx, const int ny, const int nz, const do
 	source_set_external_field (s, 45., -7.);
 
 	f = mgcal_func_new (total_force_dipole, NULL);
-
-
 	a = (double *) malloc (g->n * sizeof (double));
 
+	t = omp_get_wtime ();
+#pragma omp parallel
 	{
-		int			i, j;
-		cvector		*obs = cvector_new (0., 0., 0);
+		int		n;
+		cvector	*obs = cvector_new (0., 0., 0.);
 
-		for (j = 0; j < g->ny; j++) {
-			for (i = 0; i < g->nx; i++) {
-				cvector_set (obs, g->x[i], g->y[j], g->z[0]);
-				a[i + j * g->nx] = f->function (obs, s, f->parameter);
-			}
+#pragma omp for
+		for (n = 0; n < g->n; n++) {
+			grid_get_nth (g, n, obs, NULL);
+			a[n] = f->function (obs, s, f->parameter);
 		}
 		cvector_free (obs);
 	}
+	fprintf (stderr, "time(1) = %.4e\n", omp_get_wtime () - t);
 
 	fwrite_grid_with_data (stream, g, a, NULL);
 
@@ -81,6 +87,8 @@ example_dipole_irregular_surface (FILE *stream, const int nx, const int ny, cons
 	source		*s;
 	mgcal_func	*f;
 
+	double		t;
+
 	z1 = irregular_surface (nx, ny, x, y);
 	g = grid_new_full (nx, ny, nz, x, y, z, NULL, NULL, NULL, z1);
 	free (z1);
@@ -92,20 +100,20 @@ example_dipole_irregular_surface (FILE *stream, const int nx, const int ny, cons
 	f = mgcal_func_new (total_force_dipole, NULL);
 	a = (double *) malloc (g->n * sizeof (double));
 
+	t = omp_get_wtime ();
+#pragma omp parallel
 	{
-		int		i, j;
-		cvector	*obs = cvector_new (0., 0., 0);
+		int		n;
+		cvector	*obs = cvector_new (0., 0., 0.);
 
-		for (j = 0; j < g->ny; j++) {
-			for (i = 0; i < g->nx; i++) {
-				double	zk = g->z[0];
-				if (g->z1) zk += g->z1[i];
-				cvector_set (obs, g->x[i], g->y[j], zk);
-				a[i + j * g->nx] = f->function (obs, s, f->parameter);
-			}
+#pragma omp for
+		for (n = 0; n < g->n; n++) {
+			grid_get_nth (g, n, obs, NULL);
+			a[n] = f->function (obs, s, f->parameter);
 		}
 		cvector_free (obs);
 	}
+	fprintf (stderr, "time(2) = %.4e\n", omp_get_wtime () - t);
 
 	fwrite_grid_with_data (stream, g, a, NULL);
 
@@ -125,6 +133,8 @@ example_dipole_multi_sources (FILE *stream, const int nx, const int ny, const in
 	source		*s;
 	source		*cur;
 	mgcal_func	*f;
+
+	double		t;
 
 	g = grid_new (nx, ny, nz, x, y, z);
 	s = source_new ();
@@ -149,20 +159,20 @@ example_dipole_multi_sources (FILE *stream, const int nx, const int ny, const in
 	f = mgcal_func_new (total_force_dipole, NULL);
 	a = (double *) malloc (g->n * sizeof (double));
 
+	t = omp_get_wtime ();
+#pragma omp parallel
 	{
-		int		i, j;
-		cvector	*obs = cvector_new (0., 0., 0);
+		int		n;
+		cvector	*obs = cvector_new (0., 0., 0.);
 
-		for (j = 0; j < g->ny; j++) {
-			for (i = 0; i < g->nx; i++) {
-				double	zk = g->z[0];
-				if (g->z1) zk += g->z1[i];
-				cvector_set (obs, g->x[i], g->y[j], zk);
-				a[i + j * g->nx] = f->function (obs, s, f->parameter);
-			}
+#pragma omp for
+		for (n = 0; n < g->n; n++) {
+			grid_get_nth (g, n, obs, NULL);
+			a[n] = f->function (obs, s, f->parameter);
 		}
 		cvector_free (obs);
 	}
+	fprintf (stderr, "time(3) = %.4e\n", omp_get_wtime () - t);
 
 	fwrite_grid_with_data (stream, g, a, NULL);
 

@@ -156,3 +156,21 @@ grid_free (grid *g)
 	}
 	return;
 }
+
+void
+grid_get_nth (const grid *g, const int n, cvector *center, cvector *dim)
+{
+	int	i, j, k, m;
+	m = n;
+	k = m / g->nh;
+	m -= k * g->nh;
+	j = m / g->nx;
+	i = m - j * g->nx;
+	if (center) {
+		double	zk = g->z[k];
+		if (g->z1) zk += g->z1[m];
+		cvector_set (center, g->x[i], g->y[j], zk);
+	}
+	if (dim) cvector_set (dim, g->dx[i], g->dy[j], g->dz[k]);
+	return;
+}

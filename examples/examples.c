@@ -19,9 +19,9 @@
 #include "mgcal.h"
 #include "examples.h"
 
-const int		nx = 25;
-const int		ny = 25;
-const int		nz = 10;
+const int		nx = 50;
+const int		ny = 50;
+const int		nz = 25;
 const double	x[] = {-10., 10.};
 const double	y[] = {-10., 10.};
 const double	z[] = {0., -10.};

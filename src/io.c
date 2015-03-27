@@ -121,61 +121,35 @@ fwrite_data_array (FILE *stream, const data_array *array, const char *format)
 void
 fwrite_grid (FILE *stream, const grid *g, const char *format)
 {
-	int		i, j, k;
-	int		nx;
-	int		ny;
-	int		nz;
-	double	*xi, *yj, *zk;
-	double	*z1 = NULL;
+	int		n;
+	cvector	*pos;
 	char	fm[BUFSIZ];
 	if (!format) strcpy (fm, "%f %f %f\n");
 	else sprintf (fm, "%s\n", format);
 
-	nx = g->nx;
-	ny = g->ny;
-	nz = g->nz;
-
-	for (k = 0, zk = g->z; k < nz; k++, zk++) {
-		for (j = 0, yj = g->y; j < ny; j++, yj++) {
-			if (g->z1) z1 = g->z1 + j * nx;
-			for (i = 0, xi = g->x; i < nx; i++, xi++) {
-				double	z = *zk;
-				if (z1) z += z1[i];
-				fprintf (stream, fm, *xi, *yj, z);
-			}
-		}
+	pos = cvector_new (0., 0., 0.);
+	for (n = 0; n < g->n; n++) {
+		grid_get_nth (g, n, pos, NULL);
+		fprintf (stream, fm, pos->x, pos->y, pos->z);
 	}
+	cvector_free (pos);
 	return;
 }
 
 void
 fwrite_grid_with_data (FILE *stream, const grid *g, const double *data, const char *format)
 {
-	int		i, j, k;
-	int		nx;
-	int		ny;
-	int		nz;
-	double	*xi, *yj, *zk, *d;
-	double	*z1 = NULL;
+	int		n;
+	cvector	*pos;
 	char	fm[BUFSIZ];
 	if (!format) strcpy (fm, "%f %f %f %f\n");
 	else sprintf (fm, "%s\n", format);
 
-	nx = g->nx;
-	ny = g->ny;
-	nz = g->nz;
-
-	d = (double *) data;
-	for (k = 0, zk = g->z; k < nz; k++, zk++) {
-		for (j = 0, yj = g->y; j < ny; j++, yj++) {
-			if (g->z1) z1 = g->z1 + j * nx;
-			for (i = 0, xi = g->x; i < nx; i++, xi++) {
-				double	z = *zk;
-				if (z1) z += z1[i];
-				fprintf (stream, fm, *xi, *yj, z, *d);
-				d++;
-			}
-		}
+	pos = cvector_new (0., 0., 0.);
+	for (n = 0; n < g->n; n++) {
+		grid_get_nth (g, n, pos, NULL);
+		fprintf (stream, fm, pos->x, pos->y, pos->z, data[n]);
 	}
+	cvector_free (pos);
 	return;
 }

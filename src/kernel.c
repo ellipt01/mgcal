@@ -66,9 +66,9 @@ kernel_matrix_set (double *a, data_array *array, grid *g, cvector *mgz, cvector 
 		int		i, j, k, l;
 		double	*z1 = NULL;
 		cvector	*obs_pos = cvector_new (0., 0., 0.);
-		cvector	*src_pos = cvector_new (0., 0., 0.);
-		cvector	*src_dim = cvector_new (0., 0., 0.);
 		source	*src = source_new ();
+		src->pos = cvector_new (0., 0., 0.);
+		src->dim = cvector_new (0., 0., 0.);
 		if (exf) src->exf = exf;
 		if (mgz) src->mgz = mgz;
 
@@ -85,10 +85,8 @@ kernel_matrix_set (double *a, data_array *array, grid *g, cvector *mgz, cvector 
 					double	*zl = array->z;
 					double	z1k = *zk;
 					if (z1) z1k += z1[i];
-					cvector_set (src_pos, *xi, *yj, z1k);
-					src->pos = src_pos;
-					cvector_set (src_dim, g->dx[i], g->dy[j], g->dz[k]);
-					src->dim = src_dim;
+					cvector_set (src->pos, *xi, *yj, z1k);
+					cvector_set (src->dim, g->dx[i], g->dy[j], g->dz[k]);
 					for (l = 0; l < array->n; l++) {
 						int	index = (k * nx * ny + j * nx + i) * m + l;	// for parallel calculation
 						cvector_set (obs_pos, *xl, *yl, *zl);
@@ -103,8 +101,6 @@ kernel_matrix_set (double *a, data_array *array, grid *g, cvector *mgz, cvector 
 			}
 		}
 		cvector_free (obs_pos);
-		cvector_free (src_pos);
-		cvector_free (src_dim);
 		free (src);
 	}
 	return;
@@ -119,6 +115,7 @@ kernel_matrix (data_array *array, grid *g, cvector *mgz, cvector *exf, mgcal_fun
 	m = array->n;
 	n = g->n;
 	a = (double *) malloc (m * n * sizeof (double));
+	if (!a) error_and_exit ("kernel_matrix", "failed to allocate memory of *a.", __FILE__, __LINE__);
 	kernel_matrix_set (a, array, g, mgz, exf, f);
 	return a;
 }
