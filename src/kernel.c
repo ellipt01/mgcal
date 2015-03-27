@@ -1,0 +1,124 @@
+/*
+ * kernel.c
+ *
+ *  Created on: 2015/03/15
+ *      Author: utsugi
+ */
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <stdbool.h>
+
+#ifdef _OPENMP
+#include <omp.h>
+#endif
+
+#include "vector.h"
+#include "source.h"
+#include "data_array.h"
+#include "grid.h"
+#include "kernel.h"
+#include "util.h"
+
+static mgcal_func *
+mgcal_func_alloc (void)
+{
+	mgcal_func	*f = (mgcal_func *) malloc (sizeof (mgcal_func));
+	f->function = NULL;
+	f->parameter = NULL;
+	return f;
+}
+
+mgcal_func *
+mgcal_func_new (theoretical func, void *data)
+{
+	mgcal_func	*f = mgcal_func_alloc ();
+	f->function = func;
+	f->parameter = data;
+	return f;
+}
+
+void
+mgcal_func_free (mgcal_func *f)
+{
+	if (f) free (f);
+	return;
+}
+
+void
+kernel_matrix_set (double *a, data_array *array, grid *g, cvector *mgz, cvector *exf, mgcal_func *f)
+{
+	int		m;
+	int		nx;
+	int		ny;
+	int		nz;
+
+
+	if (!a) error_and_exit ("kernel_matrix_set", "double *a is empty.", __FILE__, __LINE__);
+
+	m = array->n;
+	nx = g->nx;
+	ny = g->ny;
+	nz = g->nz;
+
+#pragma omp parallel
+	{
+		int		i, j, k, l;
+		double	*z1 = NULL;
+		cvector	*obs_pos = cvector_new (0., 0., 0.);
+		cvector	*src_pos = cvector_new (0., 0., 0.);
+		cvector	*src_dim = cvector_new (0., 0., 0.);
+		source	*src = source_new ();
+		if (exf) src->exf = exf;
+		if (mgz) src->mgz = mgz;
+
+#pragma omp for
+		for (k = 0; k < nz; k++) {
+			double	*zk = g->z + k;	// for parallel calculation
+			double	*yj = g->y;
+			for (j = 0; j < ny; j++) {
+				double	*xi = g->x;
+				if (g->z1) z1 = g->z1 + j * nx;
+				for (i = 0; i < nx; i++) {
+					double	*xl = array->x;
+					double	*yl = array->y;
+					double	*zl = array->z;
+					double	z1k = *zk;
+					if (z1) z1k += z1[i];
+					cvector_set (src_pos, *xi, *yj, z1k);
+					src->pos = src_pos;
+					cvector_set (src_dim, g->dx[i], g->dy[j], g->dz[k]);
+					src->dim = src_dim;
+					for (l = 0; l < array->n; l++) {
+						int	index = (k * nx * ny + j * nx + i) * m + l;	// for parallel calculation
+						cvector_set (obs_pos, *xl, *yl, *zl);
+						a[index] = f->function (obs_pos, src, f->parameter);
+						xl++;
+						yl++;
+						zl++;
+					}
+					xi++;
+				}
+				yj++;
+			}
+		}
+		cvector_free (obs_pos);
+		cvector_free (src_pos);
+		cvector_free (src_dim);
+		free (src);
+	}
+	return;
+}
+
+double *
+kernel_matrix (data_array *array, grid *g, cvector *mgz, cvector *exf, mgcal_func *f)
+{
+	int		m, n;
+	double	*a;
+
+	m = array->n;
+	n = g->n;
+	a = (double *) malloc (m * n * sizeof (double));
+	kernel_matrix_set (a, array, g, mgz, exf, f);
+	return a;
+}

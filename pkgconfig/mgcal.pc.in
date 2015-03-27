@@ -1,0 +1,10 @@
+prefix=@prefix@
+exec_prefix=@exec_prefix@
+libdir=@libdir@
+includedir=@includedir@
+
+Name: @PACKAGE@
+Description: @MGCAL_DESCRIPTION@
+Version: @VERSION@
+Libs: -L${libdir} -lmgcal
+Cflags: -I${includedir}/mgcal
