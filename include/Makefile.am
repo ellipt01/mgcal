@@ -1,6 +1,9 @@
 ## Process this file with automake to produce Makefile.in
+## Process this file with automake to produce Makefile.in
 
-include_HEADERS = \
+libmgcal_includedir = $(pkgincludedir)
+
+libmgcal_include_DATA =\
 	util.h\
 	vector.h\
 	grid.h\
@@ -10,3 +13,6 @@ include_HEADERS = \
 	kernel.h\
 	io.h\
 	mgcal.h
+
+EXTRA_DIST = $(libmgcal_include_DATA)
+
