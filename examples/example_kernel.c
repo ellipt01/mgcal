@@ -31,7 +31,7 @@ create_data_array (const grid *g)
 	return array;
 }
 
-void
+double *
 example_kernel (const int nx, const int ny, const int nz, const double x[], const double y[], const double z[], const double zobs)
 {
 	data_array	*array;
@@ -62,7 +62,6 @@ example_kernel (const int nx, const int ny, const int nz, const double x[], cons
 	mgcal_func_free (f);
 	cvector_free (exf);
 	cvector_free (mgz);
-	free (a);
 
-	return;
+	return a;
 }

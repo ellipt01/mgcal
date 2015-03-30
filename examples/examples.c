@@ -52,7 +52,12 @@ main (void)
 		fclose (fp);
 	}
 
-	example_kernel (nx, ny, nz, x, y, z, zobs);
+	if ((fp = fopen ("kernel.data", "w"))) {
+		double	*a = example_kernel (nx, ny, nz, x, y, z, zobs);
+		int		i;
+		for (i = 0; i < nx * ny * nz; i++) fprintf (fp, "%f\n", a[i]);
+		fclose (fp);
+	}
 
 	return EXIT_SUCCESS;
 }
