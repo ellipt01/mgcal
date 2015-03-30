@@ -5,8 +5,8 @@
  *      Author: utsugi
  */
 
-#ifndef VECTOR_H_
-#define VECTOR_H_
+#ifndef CVECTOR_H_
+#define CVECTOR_H_
 
 #ifdef __cplusplus
 extern "C" {
@@ -45,4 +45,4 @@ void	cvector_sub (cvector *v1, const cvector *v2);
 }
 #endif
 
-#endif /* VECTOR_H_ */
+#endif /* CVECTOR_H_ */

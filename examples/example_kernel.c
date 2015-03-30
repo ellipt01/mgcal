@@ -48,8 +48,8 @@ example_kernel (const int nx, const int ny, const int nz, const double x[], cons
 	array = create_data_array (gobs);
 
 	gsrc = grid_new (nx, ny, nz, x, y, z);
-	exf = cvector_new_with_geodesic_poler (1., 45., 0.);
-	mgz = cvector_new_with_geodesic_poler (5., 45., 0.);
+	exf = cvector_new_with_geodesic_poler (1., 50., -7.);
+	mgz = cvector_new_with_geodesic_poler (5., 50., -7.);
 	f = mgcal_func_new (total_force_dipole, NULL);
 
 	t = omp_get_wtime ();

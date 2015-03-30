@@ -8,7 +8,7 @@
 #include <stdlib.h>
 #include <math.h>
 
-#include "vector.h"
+#include "cvector.h"
 #include "util.h"
 
 static cvector *

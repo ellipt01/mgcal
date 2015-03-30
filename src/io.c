@@ -10,8 +10,8 @@
 #include <stdbool.h>
 #include <string.h>
 
+#include "cvector.h"
 #include "data_array.h"
-#include "vector.h"
 #include "grid.h"
 
 typedef struct s_datalist	datalist;

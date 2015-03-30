@@ -7,8 +7,9 @@
 
 #include <stdlib.h>
 
-#include "vector.h"
 #include "source.h"
+
+#include "cvector.h"
 #include "util.h"
 
 static source *

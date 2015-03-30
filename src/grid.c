@@ -1,8 +1,9 @@
 #include <stdlib.h>
 #include <stdbool.h>
 
-#include "vector.h"
 #include "grid.h"
+
+#include "cvector.h"
 #include "util.h"
 
 static grid *
@@ -158,7 +159,7 @@ grid_free (grid *g)
 }
 
 static bool
-grid_check_counter (const grid *g, const int i, const int j, const int k, const int h)
+grid_check_index (const grid *g, const int i, const int j, const int k, const int h)
 {
 	if (i < 0 || g->nx <= i) return false;
 	if (j < 0 || g->ny <= j) return false;
@@ -167,15 +168,22 @@ grid_check_counter (const grid *g, const int i, const int j, const int k, const 
 	return true;
 }
 
+static bool
+grid_get_index (const grid *g, const int n, int *i, int *j, int *k, int *h)
+{
+	if (g->n <= n) return false;
+	*k = n / g->nh;
+	*h = n % g->nh;
+	*j = *h / g->nx;
+	*i = *h % g->nx;
+	return grid_check_index (g, *i, *j, *k, *h);
+}
+
 void
 grid_get_nth (const grid *g, const int n, cvector *center, cvector *dim)
 {
 	int	i, j, k, h;
-	k = n / g->nh;
-	h = n % g->nh;
-	j = h / g->nx;
-	i = h % g->nx;
-	if (!grid_check_counter (g, i, j, k, h)) error_and_exit ("grid_get_nth", "index out of range.", __FILE__, __LINE__);
+	if (!grid_get_index (g, n, &i, &j, &k, &h)) error_and_exit ("grid_get_nth", "index out of range.", __FILE__, __LINE__);
 	if (center) {
 		double	zk = g->z[k];
 		if (g->z1) zk += g->z1[h];

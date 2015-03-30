@@ -13,7 +13,7 @@
 #include <omp.h>
 #endif
 
-#include "vector.h"
+#include "cvector.h"
 #include "source.h"
 #include "data_array.h"
 #include "grid.h"
@@ -65,7 +65,7 @@ kernel_matrix_set (double *a, data_array *array, grid *g, cvector *mgz, cvector 
 	{
 		int		i, j, k, l;
 		double	*z1 = NULL;
-		cvector	*obs_pos = cvector_new (0., 0., 0.);
+		cvector	*obs = cvector_new (0., 0., 0.);
 		source	*src = source_new ();
 		src->pos = cvector_new (0., 0., 0.);
 		src->dim = cvector_new (0., 0., 0.);
@@ -89,8 +89,8 @@ kernel_matrix_set (double *a, data_array *array, grid *g, cvector *mgz, cvector 
 					cvector_set (src->dim, g->dx[i], g->dy[j], g->dz[k]);
 					for (l = 0; l < array->n; l++) {
 						int	index = (k * nx * ny + j * nx + i) * m + l;	// for parallel calculation
-						cvector_set (obs_pos, *xl, *yl, *zl);
-						a[index] = f->function (obs_pos, src, f->parameter);
+						cvector_set (obs, *xl, *yl, *zl);
+						a[index] = f->function (obs, src, f->parameter);
 						xl++;
 						yl++;
 						zl++;
@@ -100,7 +100,7 @@ kernel_matrix_set (double *a, data_array *array, grid *g, cvector *mgz, cvector 
 				yj++;
 			}
 		}
-		cvector_free (obs_pos);
+		cvector_free (obs);
 		free (src);
 	}
 	return;

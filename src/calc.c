@@ -7,9 +7,11 @@
 
 #include <stdio.h>
 #include <math.h>
+#include <float.h>
 
-#include "vector.h"
 #include "source.h"
+#include "calc.h"
+#include "cvector.h"
 
 static void
 append_ (const int flag, cvector *f0, const cvector *f1)
@@ -58,19 +60,17 @@ prism_kernel (const double x, const double y, const double z, const cvector *mag
 
 	double	r = sqrt (x * x + y * y + z * z);
 
-	double eps = 1.0e-6;
-
-	if (fabs (y) <= eps && fabs (z) <= eps && x < 0.0)
+	if (fabs (y) <= DBL_EPSILON && fabs (z) <= DBL_EPSILON && x < 0.0)
 		lnx = - log (r - x);
 	else
 		lnx = log (r + x);
 
-	if (fabs (x) <= eps && fabs (z) <= eps && y < 0.0)
+	if (fabs (x) <= DBL_EPSILON && fabs (z) <= DBL_EPSILON && y < 0.0)
 		lny = - log (r - y);
 	else
 		lny = log (r + y);
 
-	if (fabs (x) <= eps && fabs (y) <= eps && z < 0.0)
+	if (fabs (x) <= DBL_EPSILON && fabs (y) <= DBL_EPSILON && z < 0.0)
 		lnz = - log (r - z);
 	else
 		lnz = log (r + z);
@@ -97,7 +97,7 @@ prism_kernel (const double x, const double y, const double z, const cvector *mag
 }
 
 cvector *
-dipole (const cvector *obs, source *s)
+dipole (const cvector *obs, const source *s)
 {
 	double	x, y, z;
 	double	x0, y0, z0;
@@ -113,7 +113,7 @@ dipole (const cvector *obs, source *s)
 	z0 = obs->z;
 
 	f = cvector_new (0., 0., 0.);
-	cur = s;
+	cur = (source *) s;
 	while (cur) {
 		cvector	*tmp;
 		x = cur->pos->x;
@@ -132,7 +132,7 @@ dipole (const cvector *obs, source *s)
     source	*s    : プリズムのプロパティ
 *********************************************/
 cvector *
-prism (const cvector *obs, source *s)
+prism (const cvector *obs, const source *s)
 {
 	int		i, j, k;
 	double	a[2], b[2], c[2];
@@ -153,7 +153,7 @@ prism (const cvector *obs, source *s)
 
 	f = cvector_new (0., 0., 0.);
 
-	cur = s;
+	cur = (source *) s;
 	while (cur) {
 		// プリズムのディメンジョン
 		dx = cur->dim->x;
@@ -227,7 +227,7 @@ prism_yz_kernel (const double y, const double z, const cvector *mag)
 }
 
 cvector *
-dipole_yz (const cvector *obs, source *s)
+dipole_yz (const cvector *obs, const source *s)
 {
 	double	y, z;
 	double	y0, z0;
@@ -239,7 +239,7 @@ dipole_yz (const cvector *obs, source *s)
 	z0 = obs->z;
 
 	f = cvector_new (0., 0., 0.);
-	cur = s;
+	cur = (source *) s;
 	while (cur) {
 		cvector	*tmp;
 		// dipoleの座標
@@ -255,7 +255,7 @@ dipole_yz (const cvector *obs, source *s)
 }
 
 cvector *
-prism_yz (const cvector *obs, source *s)
+prism_yz (const cvector *obs, const source *s)
 {
 	int		j, k;
 	double	b[2], c[2];
@@ -271,7 +271,7 @@ prism_yz (const cvector *obs, source *s)
 
 	f = cvector_new (0., 0., 0.);
 
-	cur = s;
+	cur = (source *) s;
 	while (cur) {
 		// プリズムのディメンジョン
 		dy = cur->dim->y;
@@ -304,47 +304,166 @@ prism_yz (const cvector *obs, source *s)
 	return f;
 }
 
+typedef enum {
+	MGCAL_X_COMPONENT,	// Hx
+	MGCAL_Y_COMPONENT,	// Hy
+	MGCAL_Z_COMPONENT,	// Hz
+	MGCAL_TOTAL_FORCE	// f
+} MgcalComponent;
+
 double
-total_force (const cvector *exf, cvector *f)
+total_force (const cvector *exf, const cvector *f)
 {
 	if (exf == NULL) error_and_exit ("total_force", "cvector *exf is empty.", __FILE__, __LINE__);
 	if (f == NULL) error_and_exit ("total_force", "cvector *f is empty.", __FILE__, __LINE__);
 	return exf->x * f->x + exf->y * f->y + exf->z * f->z;
 }
 
-double
-total_force_dipole (const cvector *obs, source *src, void *data)
+static double
+calc_component (const cvector *f, const source *src, MgcalComponent comp)
+{
+	double	val;
+	switch (comp) {
+	case MGCAL_X_COMPONENT:
+		val = f->x;
+		break;
+
+	case MGCAL_Y_COMPONENT:
+		val = f->y;
+		break;
+
+	case MGCAL_Z_COMPONENT:
+		val = f->z;
+		break;
+
+	case MGCAL_TOTAL_FORCE:
+		val = total_force (src->exf, f);
+		break;
+
+	}
+	return val;
+}
+
+/*** dipole ***/
+static double
+component_dipole (const cvector *obs, const source *src, MgcalComponent comp)
 {
 	cvector	*f = dipole (obs, src);
-	double	val = total_force (src->exf, f);
+	double	val = calc_component (f, src, comp);
 	cvector_free (f);
 	return val;
 }
 
 double
-total_force_prism (const cvector *obs, source *src, void *data)
+x_component_dipole (const cvector *obs, const source *src, void *data)
+{
+	return component_dipole (obs, src, MGCAL_X_COMPONENT);
+}
+
+double
+y_component_dipole (const cvector *obs, const source *src, void *data)
+{
+	return component_dipole (obs, src, MGCAL_Y_COMPONENT);
+}
+
+double
+z_component_dipole (const cvector *obs, const source *src, void *data)
+{
+	return component_dipole (obs, src, MGCAL_Z_COMPONENT);
+}
+
+double
+total_force_dipole (const cvector *obs, const source *src, void *data)
+{
+	return component_dipole (obs, src, MGCAL_TOTAL_FORCE);
+}
+
+/*** prism ***/
+static double
+component_prism (const cvector *obs, const source *src, MgcalComponent comp)
 {
 	cvector	*f = prism (obs, src);
-	double	val = total_force (src->exf, f);
+	double	val = calc_component (f, src, comp);
 	cvector_free (f);
 	return val;
 }
 
 double
-total_force_dipole_yz (const cvector *obs, source *src, void *data)
+x_component_prism (const cvector *obs, const source *src, void *data)
+{
+	return component_prism (obs, src, MGCAL_X_COMPONENT);
+}
+
+double
+y_component_prism (const cvector *obs, const source *src, void *data)
+{
+	return component_prism (obs, src, MGCAL_Y_COMPONENT);
+}
+
+double
+z_component_prism (const cvector *obs, const source *src, void *data)
+{
+	return component_prism (obs, src, MGCAL_Z_COMPONENT);
+}
+
+double
+total_force_prism (const cvector *obs, const source *src, void *data)
+{
+	return component_prism (obs, src, MGCAL_TOTAL_FORCE);
+}
+
+/*** dipole yz ***/
+static double
+component_dipole_yz (const cvector *obs, const source *src, MgcalComponent comp)
 {
 	cvector	*f = dipole_yz (obs, src);
-	double	val = total_force (src->exf, f);
+	double	val = calc_component (f, src, comp);
 	cvector_free (f);
 	return val;
 }
 
 double
-total_force_prism_yz (const cvector *obs, source *src, void *data)
+y_component_dipole_yz (const cvector *obs, const source *src, void *data)
+{
+	return component_dipole_yz (obs, src, MGCAL_Y_COMPONENT);
+}
+
+double
+z_component_dipole_yz (const cvector *obs, const source *src, void *data)
+{
+	return component_dipole_yz (obs, src, MGCAL_Z_COMPONENT);
+}
+
+double
+total_force_dipole_yz (const cvector *obs, const source *src, void *data)
+{
+	return component_dipole_yz (obs, src, MGCAL_TOTAL_FORCE);
+}
+
+/*** prism yz ***/
+static double
+component_prism_yz (const cvector *obs, const source *src, MgcalComponent comp)
 {
 	cvector	*f = prism_yz (obs, src);
-	double	val = total_force (src->exf, f);
+	double	val = calc_component (f, src, comp);
 	cvector_free (f);
 	return val;
 }
 
+double
+y_component_prism_yz (const cvector *obs, const source *src, void *data)
+{
+	return component_prism_yz (obs, src, MGCAL_Y_COMPONENT);
+}
+
+double
+z_component_prism_yz (const cvector *obs, const source *src, void *data)
+{
+	return component_prism_yz (obs, src, MGCAL_Z_COMPONENT);
+}
+
+double
+total_force_prism_yz (const cvector *obs, const source *src, void *data)
+{
+	return component_prism_yz (obs, src, MGCAL_TOTAL_FORCE);
+}

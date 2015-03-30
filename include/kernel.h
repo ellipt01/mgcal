@@ -12,7 +12,7 @@
 extern "C" {
 #endif
 
-typedef double	(*theoretical) (const cvector *pos, source *src, void *data);
+typedef double	(*theoretical) (const cvector *pos, const source *src, void *data);
 
 typedef struct s_mgcal_func	mgcal_func;
 
