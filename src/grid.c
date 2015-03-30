@@ -157,18 +157,28 @@ grid_free (grid *g)
 	return;
 }
 
+static bool
+grid_check_counter (const grid *g, const int i, const int j, const int k, const int h)
+{
+	if (i < 0 || g->nx <= i) return false;
+	if (j < 0 || g->ny <= j) return false;
+	if (k < 0 || g->nz <= k) return false;
+	if (h < 0 || g->nh <= h) return false;
+	return true;
+}
+
 void
 grid_get_nth (const grid *g, const int n, cvector *center, cvector *dim)
 {
-	int	i, j, k, m;
-	m = n;
-	k = m / g->nh;
-	m -= k * g->nh;
-	j = m / g->nx;
-	i = m - j * g->nx;
+	int	i, j, k, h;
+	k = n / g->nh;
+	h = n % g->nh;
+	j = h / g->nx;
+	i = h % g->nx;
+	if (!grid_check_counter (g, i, j, k, h)) error_and_exit ("grid_get_nth", "index out of range.", __FILE__, __LINE__);
 	if (center) {
 		double	zk = g->z[k];
-		if (g->z1) zk += g->z1[m];
+		if (g->z1) zk += g->z1[h];
 		cvector_set (center, g->x[i], g->y[j], zk);
 	}
 	if (dim) cvector_set (dim, g->dx[i], g->dy[j], g->dz[k]);
