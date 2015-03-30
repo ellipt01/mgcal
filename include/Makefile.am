@@ -5,7 +5,7 @@ libmgcal_includedir = $(pkgincludedir)
 
 libmgcal_include_DATA =\
 	util.h\
-	vector.h\
+	cvector.h\
 	grid.h\
 	data_array.h\
 	source.h\

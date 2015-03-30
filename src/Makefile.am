@@ -14,7 +14,7 @@ lib_LTLIBRARIES = libmgcal.la
 # Sources for mgcal
 libmgcal_la_SOURCES = \
 	util.c\
-	vector.c\
+	cvector.c\
 	grid.c\
 	data_array.c\
 	source.c\

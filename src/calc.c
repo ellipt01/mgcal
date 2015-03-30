@@ -9,9 +9,9 @@
 #include <math.h>
 #include <float.h>
 
+#include "cvector.h"
 #include "source.h"
 #include "calc.h"
-#include "cvector.h"
 
 static void
 append_ (const int flag, cvector *f0, const cvector *f1)

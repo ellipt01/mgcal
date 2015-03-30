@@ -1,9 +1,8 @@
 #include <stdlib.h>
 #include <stdbool.h>
 
-#include "grid.h"
-
 #include "cvector.h"
+#include "grid.h"
 #include "util.h"
 
 static grid *
