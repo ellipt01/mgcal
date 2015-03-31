@@ -34,20 +34,6 @@ source_item_free (source_item *si)
 	return;
 }
 
-int
-source_append_item (source *src)
-{
-	int			i = 0;
-	source_item	*cur = src->item;
-	while (cur->next) {
-		cur = cur->next;
-		i++;
-	}
-	cur->next = source_item_alloc ();
-	src->end = cur->next;
-	return i;
-}
-
 static source *
 source_alloc (void)
 {
@@ -64,8 +50,6 @@ source_new (const double inc, const double dec)
 {
 	source	*src = source_alloc ();
 	src->exf = cvector_new_with_geodesic_poler (1., inc, dec);
-	source_append_item (src);
-	src->begin = src->item->next;
 	return src;
 }
 
@@ -84,6 +68,21 @@ source_free (source *src)
 		free (src);
 	}
 	return;
+}
+
+int
+source_append_item (source *src)
+{
+	int			i = 0;
+	source_item	*cur = src->item;
+	while (cur->next) {
+		cur = cur->next;
+		i++;
+	}
+	cur->next = source_item_alloc ();
+	if (!src->begin) src->begin = src->item->next;
+	src->end = cur->next;
+	return i;
 }
 
 void

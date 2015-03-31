@@ -70,23 +70,12 @@ cvector_copy (const cvector *src)
 }
 
 void
-cvector_add (cvector *v1, const cvector *v2)
+cvector_axpy (const double alpha, const cvector *x, cvector *y)
 {
-	if (!v1) error_and_exit ("cvector_add", "cvector *v1 is empty.", __FILE__, __LINE__);
-	if (!v2) error_and_exit ("cvector_add", "cvector *v2 is empty.", __FILE__, __LINE__);
-	v1->x += v2->x;
-	v1->y += v2->y;
-	v1->z += v2->z;
-	return;
-}
-
-void
-cvector_sub (cvector *v1, const cvector *v2)
-{
-	if (!v1) error_and_exit ("cvector_sub", "cvector *v1 is empty.", __FILE__, __LINE__);
-	if (!v2) error_and_exit ("cvector_sub", "cvector *v2 is empty.", __FILE__, __LINE__);
-	v1->x -= v2->x;
-	v1->y -= v2->y;
-	v1->z -= v2->z;
+	if (!x) error_and_exit ("cvector_axpy", "cvector *x is empty.", __FILE__, __LINE__);
+	if (!y) error_and_exit ("cvector_axpy", "cvector *y is empty.", __FILE__, __LINE__);
+	y->x += alpha * x->x;
+	y->y += alpha * x->y;
+	y->z += alpha * x->z;
 	return;
 }

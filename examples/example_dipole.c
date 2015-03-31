@@ -27,6 +27,7 @@ example_dipole (FILE *stream, const int nx, const int ny, const int nz, const do
 
 	g = grid_new (nx, ny, nz, x, y, z);
 	s = source_new (45., -7.);
+	source_append_item (s);
 	source_set_position (s, 0., 0., -2.);
 	source_set_magnetization (s, 10., 45., -7.);
 
@@ -92,6 +93,7 @@ example_dipole_irregular_surface (FILE *stream, const int nx, const int ny, cons
 	g = grid_new_full (nx, ny, nz, x, y, z, NULL, NULL, NULL, z1);
 	free (z1);
 	s = source_new (45., -7.);
+	source_append_item (s);
 	source_set_position (s, 0., 0., -2.);
 	source_set_magnetization (s, 10., 45., -7.);
 
@@ -136,6 +138,7 @@ example_dipole_multi_sources (FILE *stream, const int nx, const int ny, const in
 
 	g = grid_new (nx, ny, nz, x, y, z);
 	s = source_new (45., -7.);
+	source_append_item (s);
 	source_set_position (s, 0., 0., -2.);
 	source_set_magnetization (s, 10., 45., -7.);
 

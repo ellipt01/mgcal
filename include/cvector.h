@@ -38,8 +38,7 @@ void	cvector_set (cvector *cv, const double x, const double y, const double z);
 void	cvector_free (cvector *cv);
 
 cvector	*cvector_copy (const cvector *src);
-void	cvector_add (cvector *v1, const cvector *v2);
-void	cvector_sub (cvector *v1, const cvector *v2);
+void	cvector_axpy (const double alpha, const cvector *x, cvector *y);
 
 #ifdef __cplusplus
 }

@@ -14,15 +14,7 @@
 #include "calc.h"
 
 static void
-append_ (const int flag, cvector *f0, const cvector *f1)
-{
-	if (flag == 1) cvector_add (f0, f1);
-	else if (flag == -1) cvector_sub (f0, f1);
-	return;
-}
-
-static cvector *
-dipole_kernel (const double x, const double y, const double z, const cvector *mag)
+dipole_kernel (cvector *f, const double x, const double y, const double z, const cvector *mag)
 {
 	double	fx, fy, fz;
 
@@ -49,11 +41,12 @@ dipole_kernel (const double x, const double y, const double z, const cvector *ma
 		+ jy * (3.0 * z * y / r5)
 		- jz * (1.0 / r3 - 3.0 * pow (z, 2.0) / r5);
 
-	return cvector_new (fx, fy, fz);
+	cvector_set (f, fx, fy, fz);
+	return;
 }
 
-static cvector *
-prism_kernel (const double x, const double y, const double z, const cvector *mag)
+static void
+prism_kernel (cvector *f, const double x, const double y, const double z, const cvector *mag)
 {
 	double	fx, fy, fz;
 	double	lnx, lny, lnz;
@@ -93,7 +86,8 @@ prism_kernel (const double x, const double y, const double z, const cvector *mag
 			- jz * atan2 (x * y, z * r);
 	}
 
-	return cvector_new (fx, fy, fz);
+	cvector_set (f, fx, fy, fz);
+	return;
 }
 
 cvector *
@@ -102,6 +96,7 @@ dipole (const cvector *obs, const source *s)
 	double		x, y, z;
 	double		x0, y0, z0;
 	cvector		*f;
+	cvector		*tmp;
 	source_item	*cur;
 
 
@@ -113,57 +108,54 @@ dipole (const cvector *obs, const source *s)
 	z0 = obs->z;
 
 	f = cvector_new (0., 0., 0.);
+	tmp = cvector_new (0., 0., 0.);
+
 	cur = s->begin;
 	while (cur) {
-		cvector	*tmp;
 		x = cur->pos->x;
 		y = cur->pos->y;
 		z = cur->pos->z;
-		tmp = dipole_kernel (x - x0, y - y0, z - z0, cur->mgz);
-		append_ (1, f, tmp);
-		cvector_free (tmp);
+		dipole_kernel (tmp, x - x0, y - y0, z - z0, cur->mgz);
+		cvector_axpy (1., tmp, f);
 		cur = cur->next;
 	}
+	cvector_free (tmp);
 	return f;
 }
 
-/*********************************************
-    cvector	*pos  : 観測点位置
-    source	*s    : プリズムのプロパティ
-*********************************************/
 cvector *
 prism (const cvector *obs, const source *s)
 {
-	int			i, j, k;
 	double		a[2], b[2], c[2];
 	double		x, y, z;
 	double		x0, y0, z0;
 	double		dx, dy, dz;
 	cvector		*f;
+	cvector		*tmp;
 	source_item	*cur;
 
 	if (!obs) error_and_exit ("prism", "cvector *obs is empty.", __FILE__, __LINE__);
 	if (!s) error_and_exit ("prism", "source *s is empty.", __FILE__, __LINE__);
 
-	// 観測点座標
 	x0 = obs->x;
 	y0 = obs->y;
 	z0 = obs->z;
 
 	f = cvector_new (0., 0., 0.);
+	tmp = cvector_new (0., 0., 0.);
 
 	cur = s->begin;
 	while (cur) {
-		// プリズムのディメンジョン
+		int		i, j, k;
+
 		if (!cur->dim) error_and_exit ("prism", "dimension of source is empty.", __FILE__, __LINE__);
 		dx = cur->dim->x;
 		dy = cur->dim->y;
 		dz = cur->dim->z;
 
-		// プリズムの座標
-		x = cur->pos->x;	// プリズム東西中心
-		y = cur->pos->y;	// 　　　　南北中心
-		z = cur->pos->z;	// 　　　　上端深さ
+		x = cur->pos->x;
+		y = cur->pos->y;
+		z = cur->pos->z;
 
 		a[0] = x - 0.5 * dx - x0;
 		b[0] = y - 0.5 * dy - y0;
@@ -176,25 +168,24 @@ prism (const cvector *obs, const source *s)
 		for (i = 0; i <= 1; i++) {
 			for (j = 0; j <= 1; j++) {
 				for (k = 0; k <= 1; k++) {
-					int		flag = 1;
-					cvector	*tmp;
-					if (i == 0) flag *= -1;
-					if (j == 0) flag *= -1;
-					if (k == 0) flag *= -1;
+					double	flag = 1.;
+					if (i == 0) flag *= -1.;
+					if (j == 0) flag *= -1.;
+					if (k == 0) flag *= -1.;
 
-					tmp = prism_kernel (a[i], b[j], c[k], cur->mgz);
-					append_ (flag, f, tmp);
-					cvector_free (tmp);
+					prism_kernel (tmp, a[i], b[j], c[k], cur->mgz);
+					cvector_axpy (flag, tmp, f);
 				}
 			}
 		}
 		cur = cur->next;
 	}
+	cvector_free (tmp);
 	return f;
 }
 
-static cvector *
-dipole_yz_kernel (const double y, const double z, const cvector *mag)
+static void
+dipole_yz_kernel (cvector *f, const double y, const double z, const cvector *mag)
 {
 	double	fy, fz;
 
@@ -202,16 +193,17 @@ dipole_yz_kernel (const double y, const double z, const cvector *mag)
 	double	jz = mag->z;
 
 	double	r2 = y * y + z * z;
-	double	r4 = pow(r2, 2.);
+	double	r4 = pow (r2, 2.);
 
 	fy = jy * (1. / r2 - 2. * pow (y, 2.) / r4) - jz * 2. * y * z / r4;
 	fz = - jy * 2. * y * z / r4 + jz * (1. / r2 - 2. * pow (z, 2.) / r4);
 
-	return cvector_new (0., - 2. * fy, - 2. * fz);
+	cvector_set (f, 0., - 2. * fy, - 2. * fz);
+	return;
 }
 
-static cvector *
-prism_yz_kernel (const double y, const double z, const cvector *mag)
+static void
+prism_yz_kernel (cvector *f, const double y, const double z, const cvector *mag)
 {
 	double	fy, fz;
 
@@ -220,10 +212,11 @@ prism_yz_kernel (const double y, const double z, const cvector *mag)
 
 	double	r = sqrt (y * y + z * z);
 
-	fy = jy * atan(z / y) + jz * log(r);
-	fz = jy * log(r) + jz * atan(y / z);
+	fy = jy * atan (z / y) + jz * log (r);
+	fz = jy * log (r) + jz * atan (y / z);
 
-	return cvector_new (0., - 2. * fy, - 2. * fz);
+	cvector_set (f, 0., - 2. * fy, - 2. * fz);
+	return;
 }
 
 cvector *
@@ -232,55 +225,55 @@ dipole_yz (const cvector *obs, const source *s)
 	double		y, z;
 	double		y0, z0;
 	cvector		*f;
+	cvector		*tmp;
 	source_item	*cur;
 
-	// 観測点座標
 	y0 = obs->y;
 	z0 = obs->z;
 
 	f = cvector_new (0., 0., 0.);
+	tmp = cvector_new (0., 0., 0.);
+
 	cur = s->begin;
 	while (cur) {
-		cvector	*tmp;
-		// dipoleの座標
 		y = cur->pos->y - y0;
 		z = cur->pos->z - z0;
 
-		tmp = dipole_yz_kernel (y, z, cur->mgz);
-		append_ (1, f, tmp);
-		cvector_free (tmp);
+		dipole_yz_kernel (tmp, y, z, cur->mgz);
+		cvector_axpy (1., tmp, f);
 		cur = cur->next;
 	}
+	cvector_free (tmp);
 	return f;
 }
 
 cvector *
 prism_yz (const cvector *obs, const source *s)
 {
-	int			j, k;
 	double		b[2], c[2];
 	double		y, z;
 	double		y0, z0;
 	double		dy, dz;
 	cvector		*f;
+	cvector		*tmp;
 	source_item	*cur;
 
-	// 観測点座標
 	y0 = obs->y;
 	z0 = obs->z;
 
 	f = cvector_new (0., 0., 0.);
+	tmp = cvector_new (0., 0., 0.);
 
 	cur = s->begin;
 	while (cur) {
-		// プリズムのディメンジョン
+		int		j, k;
+
 		if (!cur->dim) error_and_exit ("prism_yz", "dimension of source is empty.", __FILE__, __LINE__);
 		dy = cur->dim->y;
 		dz = cur->dim->z;
 
-		// プリズムの座標
-		y = cur->pos->y;	// プリズム南北中心
-		z = cur->pos->z;	// 　　　　上端深さ
+		y = cur->pos->y;
+		z = cur->pos->z;
 
 		b[0] = y - 0.5 * dy - y0;
 		c[0] = z - 0.5 * dz - z0;
@@ -290,18 +283,17 @@ prism_yz (const cvector *obs, const source *s)
 
 		for (j = 0; j <= 1; j++) {
 			for (k = 0; k <= 1; k++) {
-				int		flag = 1;
-				cvector	*tmp;
-				if (j == 0) flag *= -1;
-				if (k == 0) flag *= -1;
+				double	flag = 1.;
+				if (j == 0) flag *= -1.;
+				if (k == 0) flag *= -1.;
 
-				tmp = prism_yz_kernel (b[j], c[k], cur->mgz);
-				append_ (flag, f, tmp);
-				cvector_free (tmp);
+				prism_yz_kernel (tmp, b[j], c[k], cur->mgz);
+				cvector_axpy (flag, tmp, f);
 			}
 		}
 		cur = cur->next;
 	}
+	cvector_free (tmp);
 	return f;
 }
 

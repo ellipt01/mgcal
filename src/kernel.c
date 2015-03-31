@@ -68,6 +68,7 @@ kernel_matrix_set (double *a, data_array *array, grid *g, cvector *mgz, cvector 
 		cvector	*obs = cvector_new (0., 0., 0.);
 		source	*src = source_new (0., 0.);
 		if (exf) src->exf = cvector_copy (exf);
+		source_append_item (src);
 		src->end->pos = cvector_new (0., 0., 0.);
 		src->end->dim = cvector_new (0., 0., 0.);
 		if (mgz) src->end->mgz = cvector_new (0., 0., 0.);
