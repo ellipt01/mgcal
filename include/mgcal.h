@@ -1,5 +1,9 @@
-#ifndef mgcal_H
-#define mgcal_H
+#ifndef MGCAL_H
+#define MGCAL_H
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 #include <stdbool.h>
 
@@ -12,4 +16,8 @@
 #include "kernel.h"
 #include "io.h"
 
+#ifdef __cplusplus
+}
 #endif
+
+#endif /* MGCAL_H */

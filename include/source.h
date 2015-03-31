@@ -12,17 +12,25 @@
 extern "C" {
 #endif
 
-typedef struct s_source	source;
+typedef struct s_source_item	source_item;
+typedef struct s_source			source;
 
-struct s_source {
-	cvector		*exf;	// external field
+struct s_source_item {
 	cvector		*mgz;	// magnetization
 	cvector		*pos;	// center of the magnetized body
 	cvector		*dim;	// dimension of source
-	source		*next;
+	source_item	*next;
 };
 
-source	*source_new (void);
+struct s_source {
+	cvector		*exf;	// external field
+	source_item	*item;
+	source_item	*begin;
+	source_item	*end;
+};
+
+int		source_append_item (source *src);
+source	*source_new (const double inc, const double dec);
 void	source_free (source *src);
 void	source_set_position (source *src, const double x, const double y, const double z);
 void	source_set_dimension (source *src, const double dx, const double dy, const double dz);

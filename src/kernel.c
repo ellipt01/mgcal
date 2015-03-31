@@ -66,11 +66,11 @@ kernel_matrix_set (double *a, data_array *array, grid *g, cvector *mgz, cvector 
 		int		i, j, k, l;
 		double	*z1 = NULL;
 		cvector	*obs = cvector_new (0., 0., 0.);
-		source	*src = source_new ();
-		src->pos = cvector_new (0., 0., 0.);
-		src->dim = cvector_new (0., 0., 0.);
-		if (exf) src->exf = exf;
-		if (mgz) src->mgz = mgz;
+		source	*src = source_new (0., 0.);
+		if (exf) src->exf = cvector_copy (exf);
+		src->end->pos = cvector_new (0., 0., 0.);
+		src->end->dim = cvector_new (0., 0., 0.);
+		if (mgz) src->end->mgz = cvector_new (0., 0., 0.);
 
 #pragma omp for
 		for (k = 0; k < nz; k++) {
@@ -85,8 +85,9 @@ kernel_matrix_set (double *a, data_array *array, grid *g, cvector *mgz, cvector 
 					double	*zl = array->z;
 					double	z1k = *zk;
 					if (z1) z1k += z1[i];
-					cvector_set (src->pos, *xi, *yj, z1k);
-					cvector_set (src->dim, g->dx[i], g->dy[j], g->dz[k]);
+					cvector_set (src->end->pos, *xi, *yj, z1k);
+					cvector_set (src->end->dim, g->dx[i], g->dy[j], g->dz[k]);
+					if (mgz) cvector_set (src->end->mgz, mgz->x, mgz->y, mgz->z);
 					for (l = 0; l < array->n; l++) {
 						int	index = (k * nx * ny + j * nx + i) * m + l;	// for parallel calculation
 						cvector_set (obs, *xl, *yl, *zl);

@@ -182,7 +182,7 @@ void
 grid_get_nth (const grid *g, const int n, cvector *center, cvector *dim)
 {
 	int	i, j, k, h;
-	if (!grid_get_index (g, n, &i, &j, &k, &h)) error_and_exit ("grid_get_nth", "index out of range.", __FILE__, __LINE__);
+	if (!grid_get_index (g, n, &i, &j, &k, &h)) error_and_exit ("grid_get_nth", "index invalid.", __FILE__, __LINE__);
 	if (center) {
 		double	zk = g->z[k];
 		if (g->z1) zk += g->z1[h];

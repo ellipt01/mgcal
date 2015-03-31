@@ -99,10 +99,10 @@ prism_kernel (const double x, const double y, const double z, const cvector *mag
 cvector *
 dipole (const cvector *obs, const source *s)
 {
-	double	x, y, z;
-	double	x0, y0, z0;
-	cvector	*f;
-	source	*cur;
+	double		x, y, z;
+	double		x0, y0, z0;
+	cvector		*f;
+	source_item	*cur;
 
 
 	if (!obs) error_and_exit ("dipole", "cvector *obs is empty.", __FILE__, __LINE__);
@@ -113,7 +113,7 @@ dipole (const cvector *obs, const source *s)
 	z0 = obs->z;
 
 	f = cvector_new (0., 0., 0.);
-	cur = (source *) s;
+	cur = s->begin;
 	while (cur) {
 		cvector	*tmp;
 		x = cur->pos->x;
@@ -134,17 +134,16 @@ dipole (const cvector *obs, const source *s)
 cvector *
 prism (const cvector *obs, const source *s)
 {
-	int		i, j, k;
-	double	a[2], b[2], c[2];
-	double	x, y, z;
-	double	x0, y0, z0;
-	double	dx, dy, dz;
-	cvector	*f;
-	source	*cur;
+	int			i, j, k;
+	double		a[2], b[2], c[2];
+	double		x, y, z;
+	double		x0, y0, z0;
+	double		dx, dy, dz;
+	cvector		*f;
+	source_item	*cur;
 
 	if (!obs) error_and_exit ("prism", "cvector *obs is empty.", __FILE__, __LINE__);
 	if (!s) error_and_exit ("prism", "source *s is empty.", __FILE__, __LINE__);
-	if (!s->dim) error_and_exit ("prism", "s->dim is empty.", __FILE__, __LINE__);
 
 	// 観測点座標
 	x0 = obs->x;
@@ -153,9 +152,10 @@ prism (const cvector *obs, const source *s)
 
 	f = cvector_new (0., 0., 0.);
 
-	cur = (source *) s;
+	cur = s->begin;
 	while (cur) {
 		// プリズムのディメンジョン
+		if (!cur->dim) error_and_exit ("prism", "dimension of source is empty.", __FILE__, __LINE__);
 		dx = cur->dim->x;
 		dy = cur->dim->y;
 		dz = cur->dim->z;
@@ -229,17 +229,17 @@ prism_yz_kernel (const double y, const double z, const cvector *mag)
 cvector *
 dipole_yz (const cvector *obs, const source *s)
 {
-	double	y, z;
-	double	y0, z0;
-	cvector	*f;
-	source	*cur;
+	double		y, z;
+	double		y0, z0;
+	cvector		*f;
+	source_item	*cur;
 
 	// 観測点座標
 	y0 = obs->y;
 	z0 = obs->z;
 
 	f = cvector_new (0., 0., 0.);
-	cur = (source *) s;
+	cur = s->begin;
 	while (cur) {
 		cvector	*tmp;
 		// dipoleの座標
@@ -257,13 +257,13 @@ dipole_yz (const cvector *obs, const source *s)
 cvector *
 prism_yz (const cvector *obs, const source *s)
 {
-	int		j, k;
-	double	b[2], c[2];
-	double	y, z;
-	double	y0, z0;
-	double	dy, dz;
-	cvector	*f;
-	source	*cur;
+	int			j, k;
+	double		b[2], c[2];
+	double		y, z;
+	double		y0, z0;
+	double		dy, dz;
+	cvector		*f;
+	source_item	*cur;
 
 	// 観測点座標
 	y0 = obs->y;
@@ -271,9 +271,10 @@ prism_yz (const cvector *obs, const source *s)
 
 	f = cvector_new (0., 0., 0.);
 
-	cur = (source *) s;
+	cur = s->begin;
 	while (cur) {
 		// プリズムのディメンジョン
+		if (!cur->dim) error_and_exit ("prism_yz", "dimension of source is empty.", __FILE__, __LINE__);
 		dy = cur->dim->y;
 		dz = cur->dim->z;
 

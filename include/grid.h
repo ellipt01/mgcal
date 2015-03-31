@@ -1,5 +1,5 @@
-#ifndef grid_H
-#define grid_H
+#ifndef GRID_H
+#define GRID_H
 
 #ifdef __cplusplus
 extern "C" {
@@ -39,4 +39,4 @@ void	grid_get_nth (const grid *g, const int n, cvector *center, cvector *dim);
 }
 #endif
 
-#endif
+#endif /* GRID_H */
