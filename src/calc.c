@@ -105,7 +105,6 @@ dipole (const cvector *obs, const source *s)
 	cvector		*tmp;
 	source_item	*cur;
 
-
 	if (!obs) error_and_exit ("dipole", "cvector *obs is empty.", __FILE__, __LINE__);
 	if (!s) error_and_exit ("dipole", "source *s is empty.", __FILE__, __LINE__);
 
@@ -118,11 +117,18 @@ dipole (const cvector *obs, const source *s)
 
 	cur = s->begin;
 	while (cur) {
+		double	dv = 1.0;
+		if (cur->dim) {
+			double	dx = cur->dim->x;
+			double	dy = cur->dim->y;
+			double	dz = cur->dim->z;
+			dv = fabs (dx * dy * dz);
+		}
 		x = cur->pos->x;
 		y = cur->pos->y;
 		z = cur->pos->z;
 		dipole_kernel (tmp, x - x0, y - y0, z - z0, cur->mgz);
-		cvector_axpy (1., tmp, f);
+		cvector_axpy (dv, tmp, f);	// f = f + dv * tmp
 		cur = cur->next;
 	}
 	cvector_free (tmp);
@@ -135,7 +141,7 @@ prism (const cvector *obs, const source *s)
 	double		a[2], b[2], c[2];
 	double		x, y, z;
 	double		x0, y0, z0;
-	double		dx, dy, dz, dv;
+	double		dv;
 	cvector		*f;
 	cvector		*tmp;
 	source_item	*cur;
@@ -153,7 +159,7 @@ prism (const cvector *obs, const source *s)
 	cur = s->begin;
 	while (cur) {
 		int		i, j, k;
-
+		double	dx, dy, dz, dv;
 		if (!cur->dim) error_and_exit ("prism", "dimension of source is empty.", __FILE__, __LINE__);
 		dx = cur->dim->x;
 		dy = cur->dim->y;
@@ -243,11 +249,17 @@ dipole_yz (const cvector *obs, const source *s)
 
 	cur = s->begin;
 	while (cur) {
+		double	ds = 1.0;
+		if (cur->dim) {
+			double	dy = cur->dim->y;
+			double	dz = cur->dim->z;
+			ds = fabs (dy * dz);
+		}
 		y = cur->pos->y - y0;
 		z = cur->pos->z - z0;
 
 		dipole_yz_kernel (tmp, y, z, cur->mgz);
-		cvector_axpy (1., tmp, f);
+		cvector_axpy (ds, tmp, f);
 		cur = cur->next;
 	}
 	cvector_free (tmp);
@@ -260,7 +272,6 @@ prism_yz (const cvector *obs, const source *s)
 	double		b[2], c[2];
 	double		y, z;
 	double		y0, z0;
-	double		dy, dz, ds;
 	cvector		*f;
 	cvector		*tmp;
 	source_item	*cur;
@@ -274,7 +285,7 @@ prism_yz (const cvector *obs, const source *s)
 	cur = s->begin;
 	while (cur) {
 		int		j, k;
-
+		double	dy, dz, ds;
 		if (!cur->dim) error_and_exit ("prism_yz", "dimension of source is empty.", __FILE__, __LINE__);
 		dy = cur->dim->y;
 		dz = cur->dim->z;

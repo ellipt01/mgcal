@@ -123,31 +123,3 @@ kernel_matrix (const data_array *array, const grid *g, const cvector *mgz, const
 	kernel_matrix_set (a, array, g, mgz, exf, f);
 	return a;
 }
-
-void
-kernel_set_grid_volume (double *a, const data_array *array, const grid *g)
-{
-	int		m, n;
-	int		nx, ny, nz, nh;
-	cvector	*dim;
-
-	dim = cvector_new (0., 0., 0.);
-
-	m = array->n;
-	nx = g->nx;
-	ny = g->ny;
-	nz = g->nz;
-	nh = g->nh;
-
-#pragma omp parallel for
-	for (n = 0; n < g->n; n++) {
-		grid_get_nth (g, n, NULL, dim);
-		double	dx = (g->nx > 1) ? dim->x : 1.;
-		double	dy = (g->ny > 1) ? dim->y : 1.;
-		double	dz = (g->nz > 1) ? dim->z : 1.;
-		double	dv = fabs (dx * dy * dz);
-		array_scal (m, dv, a + m * n);
-	}
-
-	return;
-}

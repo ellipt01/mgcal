@@ -27,12 +27,20 @@ array_set_all (const int n, double *x, const double val)
 
 	mod = n % 4;
 	xi = x;
-	for (i = 0; i < mod; i++) {
+	if (mod == 1) {
 		xi[0] = val;
 		xi++;
+	} else if (mod == 1) {
+		xi[0] = val;
+		xi[1] = val;
+		xi += 2;
+	} else if (mod == 2) {
+		xi[0] = val;
+		xi[1] = val;
+		xi[2] = val;
+		xi += 3;
 	}
-
-	for (; i < n; i += 4) {
+	for (i = mod; i < n; i += 4) {
 		xi[0] = val;
 		xi[1] = val;
 		xi[2] = val;
@@ -55,13 +63,23 @@ array_copy (const int n, double *dist, const double *src)
 	mod = n % 4;
 	di = dist;
 	si = (double *) src;
-	for (i = 0; i < mod; i++) {
+	if (mod == 1) {
 		di[0] = si[0];
 		di++;
 		si++;
+	} else if (mod == 2) {
+		di[0] = si[0];
+		di[1] = si[1];
+		di += 2;
+		si += 2;
+	} else if (mod == 3) {
+		di[0] = si[0];
+		di[1] = si[1];
+		di[2] = si[2];
+		di += 3;
+		si += 3;
 	}
-
-	for (; i < n; i += 4) {
+	for (i = mod; i < n; i += 4) {
 		di[0] = si[0];
 		di[1] = si[1];
 		di[2] = si[2];
@@ -72,28 +90,3 @@ array_copy (const int n, double *dist, const double *src)
 	return true;
 }
 
-bool
-array_scal (const int n, double alpha, const double *src)
-{
-	int		i;
-	int		mod;
-	double	*si;
-
-	if (!src) return false;
-
-	mod = n % 4;
-	si = (double *) src;
-	for (i = 0; i < mod; i++) {
-		si[0] *= alpha;
-		si++;
-	}
-
-	for (; i < n; i += 4) {
-		si[0] *= alpha;
-		si[1] *= alpha;
-		si[2] *= alpha;
-		si[3] *= alpha;
-		si += 4;
-	}
-	return true;
-}

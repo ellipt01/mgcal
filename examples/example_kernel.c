@@ -7,7 +7,8 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <cblas.h>
+#include <math.h>
+
 #include <omp.h>
 
 #include "mgcal.h"
@@ -50,11 +51,12 @@ example_kernel (const int nx, const int ny, const int nz, const double x[], cons
 	gsrc = grid_new (nx, ny, nz, x, y, z);
 	exf = cvector_new_with_geodesic_poler (1., 50., -7.);
 	mgz = cvector_new_with_geodesic_poler (5., 50., -7.);
-	f = mgcal_func_new (total_force_dipole, NULL);
+//	f = mgcal_func_new (total_force_dipole, NULL);
+	f = mgcal_func_new (total_force_prism, NULL);
 
 	t = omp_get_wtime ();
 	a = kernel_matrix (array, gsrc, mgz, exf, f);
-	fprintf (stderr, "time = %.4e\n", omp_get_wtime () - t);
+	fprintf (stderr, "time1 = %.4e\n", omp_get_wtime () - t);
 
 	data_array_free (array);
 	grid_free (gsrc);
