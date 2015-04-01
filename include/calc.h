@@ -30,8 +30,8 @@ double	y_component_prism (const cvector *obs, const source *src, void *data);
 double	z_component_prism (const cvector *obs, const source *src, void *data);
 double	total_force_prism (const cvector *obs, const source *src, void *data);
 
-double	y_component_prism_yz (const cvector *obs, const source *src, void *data);
-double	z_component_prism_yz (const cvector *obs, const source *src, void *data);
+double	y_component_dipole_yz (const cvector *obs, const source *src, void *data);
+double	z_component_dipole_yz (const cvector *obs, const source *src, void *data);
 double	total_force_dipole_yz (const cvector *obs, const source *src, void *data);
 
 double	y_component_prism_yz (const cvector *obs, const source *src, void *data);
