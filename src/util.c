@@ -71,3 +71,29 @@ array_copy (const int n, double *dist, const double *src)
 	}
 	return true;
 }
+
+bool
+array_scal (const int n, double alpha, const double *src)
+{
+	int		i;
+	int		mod;
+	double	*si;
+
+	if (!src) return false;
+
+	mod = n % 4;
+	si = (double *) src;
+	for (i = 0; i < mod; i++) {
+		si[0] *= alpha;
+		si++;
+	}
+
+	for (; i < n; i += 4) {
+		si[0] *= alpha;
+		si[1] *= alpha;
+		si[2] *= alpha;
+		si[3] *= alpha;
+		si += 4;
+	}
+	return true;
+}

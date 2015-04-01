@@ -17,6 +17,7 @@ extern "C" {
 void	error_and_exit (const char *funcname, const char *msg, const char *file, const int line);
 bool	array_set_all (const int n, double *x, const double val);
 bool	array_copy (const int n, double *dist, const double *src);
+bool	array_scal (const int n, double alpha, const double *src);
 
 #ifdef __cplusplus
 }

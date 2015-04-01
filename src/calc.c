@@ -13,8 +13,14 @@
 #include "source.h"
 #include "calc.h"
 
+static double
+sign (const double val)
+{
+	return (val >= 0.) ? +1. : -1.;
+}
+
 static void
-dipole_kernel (cvector *f, const double x, const double y, const double z, const cvector *mag)
+dipole_kernel (cvector *f, const double x, const double y, const double z, const cvector *mgz)
 {
 	double	fx, fy, fz;
 
@@ -22,9 +28,9 @@ dipole_kernel (cvector *f, const double x, const double y, const double z, const
 	double	r3 = pow (r, 3.0);
 	double	r5 = pow (r, 5.0);
 
-	double	jx = mag->x;
-	double	jy = mag->y;
-	double	jz = mag->z;
+	double	jx = mgz->x;
+	double	jy = mgz->y;
+	double	jz = mgz->z;
 
 	fx =
 		- jx * (1.0 / r3 - 3.0 * pow (x, 2.0) / r5)
@@ -46,7 +52,7 @@ dipole_kernel (cvector *f, const double x, const double y, const double z, const
 }
 
 static void
-prism_kernel (cvector *f, const double x, const double y, const double z, const cvector *mag)
+prism_kernel (cvector *f, const double x, const double y, const double z, const cvector *mgz)
 {
 	double	fx, fy, fz;
 	double	lnx, lny, lnz;
@@ -69,9 +75,9 @@ prism_kernel (cvector *f, const double x, const double y, const double z, const 
 		lnz = log (r + z);
 
 	{
-		double	jx = mag->x;
-		double	jy = mag->y;
-		double	jz = mag->z;
+		double	jx = mgz->x;
+		double	jy = mgz->y;
+		double	jz = mgz->z;
 
 		fx = - jx * atan2 (y * z, x * r)
 			+ jy * lnz
@@ -129,7 +135,7 @@ prism (const cvector *obs, const source *s)
 	double		a[2], b[2], c[2];
 	double		x, y, z;
 	double		x0, y0, z0;
-	double		dx, dy, dz;
+	double		dx, dy, dz, dv;
 	cvector		*f;
 	cvector		*tmp;
 	source_item	*cur;
@@ -152,6 +158,7 @@ prism (const cvector *obs, const source *s)
 		dx = cur->dim->x;
 		dy = cur->dim->y;
 		dz = cur->dim->z;
+		dv = dx * dy * dz;
 
 		x = cur->pos->x;
 		y = cur->pos->y;
@@ -168,7 +175,7 @@ prism (const cvector *obs, const source *s)
 		for (i = 0; i <= 1; i++) {
 			for (j = 0; j <= 1; j++) {
 				for (k = 0; k <= 1; k++) {
-					double	flag = 1.;
+					double	flag = sign (dv);
 					if (i == 0) flag *= -1.;
 					if (j == 0) flag *= -1.;
 					if (k == 0) flag *= -1.;
@@ -185,12 +192,12 @@ prism (const cvector *obs, const source *s)
 }
 
 static void
-dipole_yz_kernel (cvector *f, const double y, const double z, const cvector *mag)
+dipole_yz_kernel (cvector *f, const double y, const double z, const cvector *mgz)
 {
 	double	fy, fz;
 
-	double	jy = mag->y;
-	double	jz = mag->z;
+	double	jy = mgz->y;
+	double	jz = mgz->z;
 
 	double	r2 = y * y + z * z;
 	double	r4 = pow (r2, 2.);
@@ -203,12 +210,12 @@ dipole_yz_kernel (cvector *f, const double y, const double z, const cvector *mag
 }
 
 static void
-prism_yz_kernel (cvector *f, const double y, const double z, const cvector *mag)
+prism_yz_kernel (cvector *f, const double y, const double z, const cvector *mgz)
 {
 	double	fy, fz;
 
-	double	jy = mag->y;
-	double	jz = mag->z;
+	double	jy = mgz->y;
+	double	jz = mgz->z;
 
 	double	r = sqrt (y * y + z * z);
 
@@ -253,7 +260,7 @@ prism_yz (const cvector *obs, const source *s)
 	double		b[2], c[2];
 	double		y, z;
 	double		y0, z0;
-	double		dy, dz;
+	double		dy, dz, ds;
 	cvector		*f;
 	cvector		*tmp;
 	source_item	*cur;
@@ -271,6 +278,7 @@ prism_yz (const cvector *obs, const source *s)
 		if (!cur->dim) error_and_exit ("prism_yz", "dimension of source is empty.", __FILE__, __LINE__);
 		dy = cur->dim->y;
 		dz = cur->dim->z;
+		ds = dy * dz;
 
 		y = cur->pos->y;
 		z = cur->pos->z;
@@ -283,7 +291,7 @@ prism_yz (const cvector *obs, const source *s)
 
 		for (j = 0; j <= 1; j++) {
 			for (k = 0; k <= 1; k++) {
-				double	flag = 1.;
+				double	flag = sign (ds);
 				if (j == 0) flag *= -1.;
 				if (k == 0) flag *= -1.;
 

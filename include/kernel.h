@@ -22,10 +22,11 @@ struct s_mgcal_func
 	void		*parameter;
 };
 
-mgcal_func	*mgcal_func_new (theoretical func, void *data);
+mgcal_func	*mgcal_func_new (const theoretical func, void *data);
 void		mgcal_func_free (mgcal_func *f);
-void		kernel_matrix_set (double *a, data_array *array, grid *g, cvector *mgz, cvector *exf, mgcal_func *f);
-double		*kernel_matrix (data_array *array, grid *g, cvector *mgz, cvector *exf, mgcal_func *f);
+void		kernel_matrix_set (double *a, const data_array *array, const grid *g, const cvector *mgz, const cvector *exf, const mgcal_func *f);
+double		*kernel_matrix (const data_array *array, const grid *g, const cvector *mgz, const cvector *exf, const mgcal_func *f);
+void		kernel_set_grid_volume (double *a, const data_array *array, const grid *g);
 
 #ifdef __cplusplus
 }
