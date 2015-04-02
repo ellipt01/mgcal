@@ -19,6 +19,10 @@
 #include "mgcal.h"
 #include "examples.h"
 
+const double	mgz_int = 10.0;
+const double	dec = 50.0;
+const double	inc = -7.0;
+
 const int		nx = 50;
 const int		ny = 50;
 const int		nz = 25;
@@ -55,7 +59,9 @@ main (void)
 	if ((fp = fopen ("kernel.data", "w"))) {
 		double	*a = example_kernel (nx, ny, nz, x, y, z, zobs);
 		int		i;
-		for (i = 0; i < nx * ny * nz; i++) fprintf (fp, "%f\n", a[i]);
+		int		m = nx * ny;
+		int		n = m * nz;
+		for (i = 0; i < m * n; i++) fprintf (fp, "%f\n", a[i]);
 		fclose (fp);
 	}
 

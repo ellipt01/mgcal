@@ -13,6 +13,9 @@
 
 #include "mgcal.h"
 
+extern const double	dec;
+extern const double	inc;
+
 data_array *
 create_data_array (const grid *g)
 {
@@ -49,10 +52,10 @@ example_kernel (const int nx, const int ny, const int nz, const double x[], cons
 	array = create_data_array (gobs);
 
 	gsrc = grid_new (nx, ny, nz, x, y, z);
-	exf = cvector_new_with_geodesic_poler (1., 50., -7.);
-	mgz = cvector_new_with_geodesic_poler (5., 50., -7.);
-//	f = mgcal_func_new (total_force_dipole, NULL);
-	f = mgcal_func_new (total_force_prism, NULL);
+	exf = cvector_new_with_geodesic_poler (1., inc, dec);
+	mgz = cvector_new_with_geodesic_poler (1., inc, dec);
+	f = mgcal_func_new (total_force_dipole, NULL);
+//	f = mgcal_func_new (total_force_prism, NULL);
 
 	t = omp_get_wtime ();
 	a = kernel_matrix (array, gsrc, mgz, exf, f);

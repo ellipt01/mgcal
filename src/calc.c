@@ -143,7 +143,7 @@ prism (const cvector *obs, const source *s)
 	double		x0, y0, z0;
 	double		dv;
 	cvector		*f;
-	cvector		*tmp;
+	cvector		tmp[8];
 	source_item	*cur;
 
 	if (!obs) error_and_exit ("prism", "cvector *obs is empty.", __FILE__, __LINE__);
@@ -154,17 +154,19 @@ prism (const cvector *obs, const source *s)
 	z0 = obs->z;
 
 	f = cvector_new (0., 0., 0.);
-	tmp = cvector_new (0., 0., 0.);
 
 	cur = s->begin;
 	while (cur) {
 		int		i, j, k;
 		double	dx, dy, dz, dv;
+		double	flag;
+
 		if (!cur->dim) error_and_exit ("prism", "dimension of source is empty.", __FILE__, __LINE__);
 		dx = cur->dim->x;
 		dy = cur->dim->y;
 		dz = cur->dim->z;
 		dv = dx * dy * dz;
+		flag = sign (dv);
 
 		x = cur->pos->x;
 		y = cur->pos->y;
@@ -174,26 +176,30 @@ prism (const cvector *obs, const source *s)
 		b[0] = y - 0.5 * dy - y0;
 		c[0] = z - 0.5 * dz - z0;
 
-		a[1] = x + 0.5 * dx - x0;
-		b[1] = y + 0.5 * dy - y0;
-		c[1] = z + 0.5 * dz - z0;
+		a[1] = a[0] + dx;
+		b[1] = b[0] + dy;
+		c[1] = c[0] + dz;
 
-		for (i = 0; i <= 1; i++) {
-			for (j = 0; j <= 1; j++) {
-				for (k = 0; k <= 1; k++) {
-					double	flag = sign (dv);
-					if (i == 0) flag *= -1.;
-					if (j == 0) flag *= -1.;
-					if (k == 0) flag *= -1.;
+		prism_kernel (&tmp[0], a[1], b[1], c[1], cur->mgz);
+		prism_kernel (&tmp[1], a[1], b[1], c[0], cur->mgz);
+		prism_kernel (&tmp[2], a[1], b[0], c[1], cur->mgz);
+		prism_kernel (&tmp[3], a[1], b[0], c[0], cur->mgz);
+		prism_kernel (&tmp[4], a[0], b[1], c[1], cur->mgz);
+		prism_kernel (&tmp[5], a[0], b[1], c[0], cur->mgz);
+		prism_kernel (&tmp[6], a[0], b[0], c[1], cur->mgz);
+		prism_kernel (&tmp[7], a[0], b[0], c[0], cur->mgz);
 
-					prism_kernel (tmp, a[i], b[j], c[k], cur->mgz);
-					cvector_axpy (flag, tmp, f);
-				}
-			}
-		}
+		f->x += flag * (tmp[0].x - tmp[1].x - tmp[2].x + tmp[3].x
+			- tmp[4].x + tmp[5].x + tmp[6].x - tmp[7].x);
+
+		f->y += flag * (tmp[0].y - tmp[1].y - tmp[2].y + tmp[3].y
+			- tmp[4].y + tmp[5].y + tmp[6].y - tmp[7].y);
+
+		f->z += flag * (tmp[0].z - tmp[1].z - tmp[2].z + tmp[3].z
+			- tmp[4].z + tmp[5].z + tmp[6].z - tmp[7].z);
+
 		cur = cur->next;
 	}
-	cvector_free (tmp);
 	return f;
 }
 
@@ -273,23 +279,23 @@ prism_yz (const cvector *obs, const source *s)
 	double		y, z;
 	double		y0, z0;
 	cvector		*f;
-	cvector		*tmp;
+	cvector		tmp[4];
 	source_item	*cur;
 
 	y0 = obs->y;
 	z0 = obs->z;
 
 	f = cvector_new (0., 0., 0.);
-	tmp = cvector_new (0., 0., 0.);
 
 	cur = s->begin;
 	while (cur) {
-		int		j, k;
 		double	dy, dz, ds;
+		double	flag;
 		if (!cur->dim) error_and_exit ("prism_yz", "dimension of source is empty.", __FILE__, __LINE__);
 		dy = cur->dim->y;
 		dz = cur->dim->z;
 		ds = dy * dz;
+		flag = sign (ds);
 
 		y = cur->pos->y;
 		z = cur->pos->z;
@@ -297,22 +303,22 @@ prism_yz (const cvector *obs, const source *s)
 		b[0] = y - 0.5 * dy - y0;
 		c[0] = z - 0.5 * dz - z0;
 
-		b[1] = y + 0.5 * dy - y0;
-		c[1] = z + 0.5 * dz - z0;
+		b[1] = b[0] + dy;
+		c[1] = c[0] + dz;
 
-		for (j = 0; j <= 1; j++) {
-			for (k = 0; k <= 1; k++) {
-				double	flag = sign (ds);
-				if (j == 0) flag *= -1.;
-				if (k == 0) flag *= -1.;
+		prism_yz_kernel (&tmp[0], b[1], c[1], cur->mgz);
+		prism_yz_kernel (&tmp[1], b[1], c[0], cur->mgz);
+		prism_yz_kernel (&tmp[2], b[0], c[1], cur->mgz);
+		prism_yz_kernel (&tmp[3], b[0], c[0], cur->mgz);
 
-				prism_yz_kernel (tmp, b[j], c[k], cur->mgz);
-				cvector_axpy (flag, tmp, f);
-			}
-		}
+		f->x += flag * (tmp[0].x - tmp[1].x - tmp[2].x + tmp[3].x);
+
+		f->y += flag * (tmp[0].y - tmp[1].y - tmp[2].y + tmp[3].y);
+
+		f->z += flag * (tmp[0].z - tmp[1].z - tmp[2].z + tmp[3].z);
+
 		cur = cur->next;
 	}
-	cvector_free (tmp);
 	return f;
 }
 

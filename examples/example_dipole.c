@@ -15,6 +15,10 @@
 
 #include "mgcal.h"
 
+extern const double	mgz_int;
+extern const double	dec;
+extern const double	inc;
+
 void
 example_dipole (FILE *stream, const int nx, const int ny, const int nz, const double x[], const double y[], const double z[])
 {
@@ -26,10 +30,10 @@ example_dipole (FILE *stream, const int nx, const int ny, const int nz, const do
 	double		t;
 
 	g = grid_new (nx, ny, nz, x, y, z);
-	s = source_new (45., -7.);
+	s = source_new (dec, inc);
 	source_append_item (s);
 	source_set_position (s, 0., 0., -2.);
-	source_set_magnetization (s, 10., 45., -7.);
+	source_set_magnetization (s, 5. * mgz_int, dec, inc);
 
 	f = mgcal_func_new (total_force_dipole, NULL);
 	a = (double *) malloc (g->n * sizeof (double));
@@ -92,10 +96,10 @@ example_dipole_irregular_surface (FILE *stream, const int nx, const int ny, cons
 	z1 = irregular_surface (nx, ny, x, y);
 	g = grid_new_full (nx, ny, nz, x, y, z, NULL, NULL, NULL, z1);
 	free (z1);
-	s = source_new (45., -7.);
+	s = source_new (dec, inc);
 	source_append_item (s);
 	source_set_position (s, 0., 0., -2.);
-	source_set_magnetization (s, 10., 45., -7.);
+	source_set_magnetization (s, 5. * mgz_int, dec, inc);
 
 	f = mgcal_func_new (total_force_dipole, NULL);
 	a = (double *) malloc (g->n * sizeof (double));
@@ -137,18 +141,18 @@ example_dipole_multi_sources (FILE *stream, const int nx, const int ny, const in
 	double		t;
 
 	g = grid_new (nx, ny, nz, x, y, z);
-	s = source_new (45., -7.);
+	s = source_new (dec, inc);
 	source_append_item (s);
-	source_set_position (s, 0., 0., -2.);
-	source_set_magnetization (s, 10., 45., -7.);
+	source_set_position (s, 0., 0., -1.);
+	source_set_magnetization (s, 10., dec, inc);
 
 	source_append_item (s);
-	source_set_position (s, -2., -2., -2.);
-	source_set_magnetization (s, 5., 45., -7.);
+	source_set_position (s, -2., -2., -1.5);
+	source_set_magnetization (s, 15., dec, inc);
 
 	source_append_item (s);
-	source_set_position (s, 2., -4., -2.);
-	source_set_magnetization (s, 15., 45., -7.);
+	source_set_position (s, 2., 4., -2.);
+	source_set_magnetization (s, 25., dec, inc);
 
 	f = mgcal_func_new (total_force_dipole, NULL);
 	a = (double *) malloc (g->n * sizeof (double));

@@ -14,6 +14,10 @@
 
 #include "mgcal.h"
 
+extern const double	mgz_int;
+extern const double	dec;
+extern const double	inc;
+
 void
 example_prism (FILE *stream, const int nx, const int ny, const int nz, const double x[], const double y[], const double z[])
 {
@@ -26,11 +30,11 @@ example_prism (FILE *stream, const int nx, const int ny, const int nz, const dou
 	double		t;
 
 	g = grid_new (nx, ny, nz, x, y, z);
-	s = source_new (45., -7.);
+	s = source_new (dec, inc);
 	source_append_item (s);
 	source_set_position (s, 0., 0., -2.);
-	source_set_dimension (s, 2., 2., 2.);
-	source_set_magnetization (s, 2.5, 45., -7.);
+	source_set_dimension (s, 5., 5., 2.);
+	source_set_magnetization (s, 0.25 * mgz_int, dec, inc);
 
 	f = mgcal_func_new (total_force_prism, NULL);
 	a = (double *) malloc (g->n * sizeof (double));

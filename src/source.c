@@ -88,6 +88,7 @@ source_append_item (source *src)
 void
 source_set_position (source *src, const double x, const double y, const double z)
 {
+	if (src->end->pos) cvector_free (src->end->pos);
 	src->end->pos = cvector_new (x, y, z);
 	return;
 }
@@ -95,6 +96,7 @@ source_set_position (source *src, const double x, const double y, const double z
 void
 source_set_dimension (source *src, const double dx, const double dy, const double dz)
 {
+	if (src->end->dim) cvector_free (src->end->dim);
 	src->end->dim = cvector_new (dx, dy, dz);
 	return;
 }
@@ -102,6 +104,7 @@ source_set_dimension (source *src, const double dx, const double dy, const doubl
 void
 source_set_magnetization (source *src, const double mgz, const double inc, const double dec)
 {
+	if (src->end->mgz) cvector_free (src->end->mgz);
 	src->end->mgz = cvector_new_with_geodesic_poler (mgz, inc, dec);
 	return;
 }
