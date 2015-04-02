@@ -102,7 +102,7 @@ dipole (const cvector *obs, const source *s)
 	double		x, y, z;
 	double		x0, y0, z0;
 	cvector		*f;
-	cvector		*tmp;
+	cvector		tmp;
 	source_item	*cur;
 
 	if (!obs) error_and_exit ("dipole", "cvector *obs is empty.", __FILE__, __LINE__);
@@ -113,7 +113,6 @@ dipole (const cvector *obs, const source *s)
 	z0 = obs->z;
 
 	f = cvector_new (0., 0., 0.);
-	tmp = cvector_new (0., 0., 0.);
 
 	cur = s->begin;
 	while (cur) {
@@ -127,11 +126,10 @@ dipole (const cvector *obs, const source *s)
 		x = cur->pos->x;
 		y = cur->pos->y;
 		z = cur->pos->z;
-		dipole_kernel (tmp, x - x0, y - y0, z - z0, cur->mgz);
-		cvector_axpy (dv, tmp, f);	// f = f + dv * tmp
+		dipole_kernel (&tmp, x - x0, y - y0, z - z0, cur->mgz);
+		cvector_axpy (dv, &tmp, f);	// f = f + dv * tmp
 		cur = cur->next;
 	}
-	cvector_free (tmp);
 	return f;
 }
 
@@ -244,14 +242,13 @@ dipole_yz (const cvector *obs, const source *s)
 	double		y, z;
 	double		y0, z0;
 	cvector		*f;
-	cvector		*tmp;
+	cvector		tmp;
 	source_item	*cur;
 
 	y0 = obs->y;
 	z0 = obs->z;
 
 	f = cvector_new (0., 0., 0.);
-	tmp = cvector_new (0., 0., 0.);
 
 	cur = s->begin;
 	while (cur) {
@@ -264,11 +261,10 @@ dipole_yz (const cvector *obs, const source *s)
 		y = cur->pos->y - y0;
 		z = cur->pos->z - z0;
 
-		dipole_yz_kernel (tmp, y, z, cur->mgz);
-		cvector_axpy (ds, tmp, f);
+		dipole_yz_kernel (&tmp, y, z, cur->mgz);
+		cvector_axpy (ds, &tmp, f);
 		cur = cur->next;
 	}
-	cvector_free (tmp);
 	return f;
 }
 

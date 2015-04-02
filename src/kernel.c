@@ -54,10 +54,6 @@ kernel_matrix_set (double *a, const data_array *array, const grid *g, const cvec
 	int		ny;
 	int		nz;
 	int		nh;
-	
-	double	*ax, *ay, *az;
-	double	*x, *y, *z;
-	double	*dx, *dy, *dz;
 
 	if (!a) error_and_exit ("kernel_matrix_set", "double *a is empty.", __FILE__, __LINE__);
 
@@ -67,57 +63,44 @@ kernel_matrix_set (double *a, const data_array *array, const grid *g, const cvec
 	nz = g->nz;
 	nh = g->nh;
 
-	ax = array->x;
-	ay = array->y;
-	az = array->z;
-
-	x = g->x;
-	y = g->y;
-	z = g->z;
-
-	dx = g->dx;
-	dy = g->dy;
-	dz = g->dz;
-
 #pragma omp parallel
 	{
 		int		i, j, k, l;
 		double	*z1 = NULL;
-		cvector	*obs = cvector_new (0., 0., 0.);;
-		cvector	*pos;
-		cvector	*dim;
+		cvector	*obs = cvector_new (0., 0., 0.);
 		source	*src = source_new (0., 0.);
 		if (exf) src->exf = cvector_copy (exf);
 		source_append_item (src);
 		src->begin->pos = cvector_new (0., 0., 0.);
 		src->begin->dim = cvector_new (0., 0., 0.);
 		if (mgz) src->begin->mgz = cvector_copy (mgz);
-		pos = src->begin->pos;
-		dim = src->begin->dim;
 
 #pragma omp for
-		for (l = 0; l < m; l++) {
-			double	*al = a + l;
-			double	*xl = ax + l;
-			double	*yl = ay + l;
-			double	*zl = az + l;
-			double	*zk = z;
-			double	*dzk = dz;
-			cvector_set (obs, *xl, *yl, *zl);
-			for (k = 0; k < nz; k++) {
-				double	*yj = y;
-				double	*dyj = dy;
-				for (j = 0; j < ny; j++) {
-					double	*xi = x;
-					double	*dxi = dx;
-					if (g->z1) z1 = g->z1 + j * nx;
-					for (i = 0; i < nx; i++) {
-						double	z1k = *zk;
-						if (z1) z1k += z1[i];
-						cvector_set (pos, *xi, *yj, z1k);
-						cvector_set (dim, *dxi, *dyj, *dzk);
+		for (k = 0; k < nz; k++) {
+			double	*zk = g->z + k;	// for parallel calculation
+			double	*dzk = g->dz + k;	// for parallel calculation
+			double	*yj = g->y;
+			double	*dyj = g->dy;
+			for (j = 0; j < ny; j++) {
+				double	*xi = g->x;
+				double	*dxi = g->dx;
+				if (g->z1) z1 = g->z1 + j * nx;
+				for (i = 0; i < nx; i++) {
+					double	*al = a + (k * nh + j * nx + i) * m;
+					double	*xl = array->x;
+					double	*yl = array->y;
+					double	*zl = array->z;
+					double	z1k = *zk;
+					if (z1) z1k += z1[i];
+					cvector_set (src->begin->pos, *xi, *yj, z1k);
+					cvector_set (src->begin->dim, *dxi, *dyj, *dzk);
+					for (l = 0; l < m; l++) {
+						cvector_set (obs, *xl, *yl, *zl);
 						*al = f->function (obs, src, f->parameter);
-						al += m;
+						al++;
+						xl++;
+						yl++;
+						zl++;
 					}
 					xi++;
 					dxi++;
@@ -125,8 +108,6 @@ kernel_matrix_set (double *a, const data_array *array, const grid *g, const cvec
 				yj++;
 				dyj++;
 			}
-			zk++;
-			dzk++;
 		}
 		cvector_free (obs);
 		source_free (src);
