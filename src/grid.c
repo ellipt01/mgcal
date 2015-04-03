@@ -168,21 +168,38 @@ grid_check_index (const grid *g, const int i, const int j, const int k, const in
 }
 
 static bool
+grid_get_index_0 (const grid *g, const int n, int *i, int *j, int *k, int *h)
+{
+	int		_i, _j, _k, _h;
+	if (g->n <= n) return false;
+
+	_k = n / g->nh;
+	_h = n % g->nh;
+	_j = _h / g->nx;
+	_i = _h % g->nx;
+
+	if (i) *i = _i;
+	if (j) *j = _j;
+	if (k) *k = _k;
+	if (h) *h = _h;
+
+	return grid_check_index (g, _i, _j, _k, _h);
+}
+
+void
 grid_get_index (const grid *g, const int n, int *i, int *j, int *k, int *h)
 {
-	if (g->n <= n) return false;
-	*k = n / g->nh;
-	*h = n % g->nh;
-	*j = *h / g->nx;
-	*i = *h % g->nx;
-	return grid_check_index (g, *i, *j, *k, *h);
+	if (!g) error_and_exit ("grid_get_index", "grid *g is empty.", __FILE__, __LINE__);
+	if (!grid_get_index_0 (g, n, i, j, k, h)) error_and_exit ("grid_get_index", "index invalid.", __FILE__, __LINE__);
+	return;
 }
 
 void
 grid_get_nth (const grid *g, const int n, cvector *center, cvector *dim)
 {
 	int	i, j, k, h;
-	if (!grid_get_index (g, n, &i, &j, &k, &h)) error_and_exit ("grid_get_nth", "index invalid.", __FILE__, __LINE__);
+	if (!g) error_and_exit ("grid_get_nth", "grid *g is empty.", __FILE__, __LINE__);
+	if (!grid_get_index_0 (g, n, &i, &j, &k, &h)) error_and_exit ("grid_get_nth", "index invalid.", __FILE__, __LINE__);
 	if (center) {
 		double	zk = g->z[k];
 		if (g->z1) zk += g->z1[h];

@@ -1,18 +1,25 @@
-#!/bin/sh
+#!/bin/bash
 
 if [ -z "$1" ]; then
-	echo "USAGE: $0 <input file>"
+	echo "USAGE: $0 <input file> (optional: range of value <val0/val1/inc>)."
 	exit
 fi
 
 if [ ! -e "$1" ]; then
-	echo "ERROR: cannot open file $1"
+	echo "ERROR: cannot open file $1."
 	exit
 fi
 if [ ! -f "$1" ]; then
-	echo "ERROR: cannot open file $1"
+	echo "ERROR: cannot open file $1."
 	exit
 fi
+
+crange="-8/8/0.5"
+if [ -n "$2" ]; then
+	crange="$2"
+fi
+inc=${crange##*/}
+ainc=`echo 2*$inc | bc -l`
 
 fn=${1%.*}
 
@@ -21,12 +28,16 @@ r2=`minmax -C $1 | gawk '{print $2}'`
 r3=`minmax -C $1 | gawk '{print $3}'`
 r4=`minmax -C $1 | gawk '{print $4}'`
 range="$r1/$r2/$r3/$r4"
+rinc1=`echo "(($r2)-($r1))/10" | bc -l | gawk '{printf("%d",$1+0.5)}'`
+rinc2=`echo "(($r4)-($r3))/10" | bc -l | gawk '{printf("%d",$1+0.5)}'`
+
+max=1000
 
 cat $1 | gawk '{print $1,$2,$4}' | surface -Gtmp.grd -I0.1/0.1 -R$range
-makecpt -T-8/8/2 -Z >| mg.cpt
-grdimage tmp.grd -JX12 -R -P -Cmg.cpt -P -B2f10nSWe -K >| "$fn".eps
-grdcontour tmp.grd -JX -R -C0.5 -A1f10a0 -L-100/-0.5 -Wta -K -O >> "$fn".eps
-grdcontour tmp.grd -JX -R -C0.5 -A1f10a0 -L0/100 -K -O >> "$fn".eps
+makecpt -T"$crange" -Z >| mg.cpt
+grdimage tmp.grd -JX12 -R -P -Cmg.cpt -P -B"$rinc1"f10/"$rinc2"f10nSWe -K >| "$fn".eps
+grdcontour tmp.grd -JX -R -C"$inc" -A"$ainc"f10a0 -L-"$max"/-"$inc" -Wta -K -O >> "$fn".eps
+grdcontour tmp.grd -JX -R -C"$inc" -A"$ainc"f10a0 -L0/"$max" -K -O >> "$fn".eps
 psscale -Cmg.cpt -D6/-1.2/5/0.5h -B4::/:"(nT)": -O >> "$fn".eps
 
 rm -f mg.cpt

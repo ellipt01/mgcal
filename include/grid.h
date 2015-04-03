@@ -33,6 +33,7 @@ grid	*grid_new_full (const int nx, const int ny, const int nz, const double x[],
 bool	grid_set_surface (grid *g, const double *z1);
 void	grid_free (grid *g);
 
+void	grid_get_index (const grid *g, const int n, int *i, int *j, int *k, int *h);
 void	grid_get_nth (const grid *g, const int n, cvector *center, cvector *dim);
 
 #ifdef __cplusplus

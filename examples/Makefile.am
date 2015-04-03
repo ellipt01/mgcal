@@ -19,7 +19,7 @@ noinst_PROGRAMS=mgcal_examples
 mgcal_examples_SOURCES= example_dipole.c example_prism.c example_kernel.c examples.c
 
 # Linker options for a.out
-mgcal_examples_LDFLAGS = $(top_srcdir)/src/libmgcal.la -lcblas
+mgcal_examples_LDFLAGS = $(top_srcdir)/src/libmgcal.la
 
 # Compiler options for a.out
 mgcal_examples_CPPFLAGS = -I$(top_srcdir)/include -I$(top_srcdir)/examples
