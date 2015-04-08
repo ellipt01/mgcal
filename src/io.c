@@ -108,13 +108,20 @@ fread_data_array (FILE *stream)
 }
 
 void
-fwrite_data_array (FILE *stream, const data_array *array, const char *format)
+fwrite_data_array_with_data (FILE *stream, const data_array *array, const double *data, const char *format)
 {
 	int		i;
 	char	fm[BUFSIZ];
 	if (!format) strcpy (fm, "%f %f %f %f\n");
 	else sprintf (fm, "%s\n", format);
-	for (i = 0; i < array->n; i++) fprintf (stream, fm, array->x[i], array->y[i], array->z[i], array->data[i]);
+	for (i = 0; i < array->n; i++) fprintf (stream, fm, array->x[i], array->y[i], array->z[i], data[i]);
+	return;
+}
+
+void
+fwrite_data_array (FILE *stream, const data_array *array, const char *format)
+{
+	fwrite_data_array_with_data (stream, array, array->data, format);
 	return;
 }
 
