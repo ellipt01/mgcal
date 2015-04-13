@@ -31,7 +31,7 @@ mgcal_func_alloc (void)
 }
 
 mgcal_func *
-mgcal_func_new (const theoretical func, void *data)
+mgcal_func_new (const mgcal_theoretical func, void *data)
 {
 	mgcal_func	*f = mgcal_func_alloc ();
 	f->function = func;
