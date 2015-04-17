@@ -8,7 +8,7 @@
 #include <stdlib.h>
 
 #include "data_array.h"
-#include "util.h"
+#include "private/util.h"
 
 static data_array *
 data_array_alloc (void)

@@ -19,7 +19,7 @@
 #include "data_array.h"
 #include "grid.h"
 #include "kernel.h"
-#include "util.h"
+#include "private/util.h"
 
 static mgcal_func *
 mgcal_func_alloc (void)

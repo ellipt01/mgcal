@@ -9,7 +9,7 @@
 #include <math.h>
 
 #include "cvector.h"
-#include "util.h"
+#include "private/util.h"
 
 static cvector *
 cvector_alloc (void)

@@ -9,7 +9,7 @@
 
 #include "cvector.h"
 #include "source.h"
-#include "util.h"
+#include "private/util.h"
 
 static source_item *
 source_item_alloc (void)

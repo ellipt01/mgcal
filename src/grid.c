@@ -3,7 +3,7 @@
 
 #include "cvector.h"
 #include "grid.h"
-#include "util.h"
+#include "private/util.h"
 
 static grid *
 grid_alloc (void)
