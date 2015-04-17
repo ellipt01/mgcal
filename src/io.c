@@ -82,7 +82,6 @@ datalist_free (datalist *list)
 data_array *
 fread_data_array (FILE *stream)
 {
-	char		buf[BUFSIZ];
 	data_array	*array;
 	int			n, k;
 	datalist	*list, *cur, *prev;

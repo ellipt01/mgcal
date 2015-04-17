@@ -37,6 +37,7 @@ cvector	*cvector_new_with_geodesic_poler (const double r, const double inc, cons
 void	cvector_set (cvector *cv, const double x, const double y, const double z);
 void	cvector_free (cvector *cv);
 
+void	cvector_scale (cvector *x, const double alpha);
 cvector	*cvector_copy (const cvector *src);
 void	cvector_axpy (const double alpha, const cvector *x, cvector *y);
 

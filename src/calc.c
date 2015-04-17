@@ -6,12 +6,16 @@
  */
 
 #include <stdio.h>
+#include <stdbool.h>
 #include <math.h>
 #include <float.h>
 
 #include "cvector.h"
 #include "source.h"
 #include "calc.h"
+#include "private/util.h"
+
+double scale_factor = 1.;
 
 static double
 sign (const double val)
@@ -25,27 +29,27 @@ dipole_kernel (cvector *f, const double x, const double y, const double z, const
 	double	fx, fy, fz;
 
 	double	r  = sqrt (x * x + y * y + z * z);
-	double	r3 = pow (r, 3.0);
-	double	r5 = pow (r, 5.0);
+	double	r3 = pow (r, 3.);
+	double	r5 = pow (r, 5.);
 
 	double	jx = mgz->x;
 	double	jy = mgz->y;
 	double	jz = mgz->z;
 
 	fx =
-		- jx * (1.0 / r3 - 3.0 * pow (x, 2.0) / r5)
+		- jx * (1.0 / r3 - 3. * pow (x, 2.) / r5)
 		+ jy * (3.0 * x * y / r5)
 		+ jz * (3.0 * x * z / r5);
 
 	fy =
 		+ jx * (3.0 * y * x / r5)
-		- jy * (1.0 / r3 - 3.0 * pow (y, 2.0) / r5)
+		- jy * (1.0 / r3 - 3. * pow (y, 2.) / r5)
 		+ jz * (3.0 * y * z / r5);
 
 	fz =
 		+ jx * (3.0 * z * x / r5)
 		+ jy * (3.0 * z * y / r5)
-		- jz * (1.0 / r3 - 3.0 * pow (z, 2.0) / r5);
+		- jz * (1.0 / r3 - 3. * pow (z, 2.) / r5);
 
 	cvector_set (f, fx, fy, fz);
 	return;
@@ -59,17 +63,17 @@ prism_kernel (cvector *f, const double x, const double y, const double z, const 
 
 	double	r = sqrt (x * x + y * y + z * z);
 
-	if (fabs (y) <= DBL_EPSILON && fabs (z) <= DBL_EPSILON && x < 0.0)
+	if (fabs (y) <= DBL_EPSILON && fabs (z) <= DBL_EPSILON && x < 0.)
 		lnx = - log (r - x);
 	else
 		lnx = log (r + x);
 
-	if (fabs (x) <= DBL_EPSILON && fabs (z) <= DBL_EPSILON && y < 0.0)
+	if (fabs (x) <= DBL_EPSILON && fabs (z) <= DBL_EPSILON && y < 0.)
 		lny = - log (r - y);
 	else
 		lny = log (r + y);
 
-	if (fabs (x) <= DBL_EPSILON && fabs (y) <= DBL_EPSILON && z < 0.0)
+	if (fabs (x) <= DBL_EPSILON && fabs (y) <= DBL_EPSILON && z < 0.)
 		lnz = - log (r - z);
 	else
 		lnz = log (r + z);
@@ -116,7 +120,12 @@ dipole (const cvector *obs, const source *s)
 
 	cur = s->begin;
 	while (cur) {
-		double	dv = 1.0;
+		double	dv;
+
+		if (!cur->pos) error_and_exit ("dipole", "position of source item is empty.", __FILE__, __LINE__);
+		if (!cur->mgz) error_and_exit ("dipole", "magnetization of source item is empty.", __FILE__, __LINE__);
+
+		dv = 1.0;
 		if (cur->dim) {
 			double	dx = cur->dim->x;
 			double	dy = cur->dim->y;
@@ -130,6 +139,7 @@ dipole (const cvector *obs, const source *s)
 		cvector_axpy (dv, &tmp, f);	// f = f + dv * tmp
 		cur = cur->next;
 	}
+	cvector_scale (f, scale_factor);
 	return f;
 }
 
@@ -139,7 +149,6 @@ prism (const cvector *obs, const source *s)
 	double		a[2], b[2], c[2];
 	double		x, y, z;
 	double		x0, y0, z0;
-	double		dv;
 	cvector		*f;
 	cvector		tmp[8];
 	source_item	*cur;
@@ -155,11 +164,13 @@ prism (const cvector *obs, const source *s)
 
 	cur = s->begin;
 	while (cur) {
-		int		i, j, k;
 		double	dx, dy, dz, dv;
 		double	flag;
 
-		if (!cur->dim) error_and_exit ("prism", "dimension of source is empty.", __FILE__, __LINE__);
+		if (!cur->pos) error_and_exit ("prism", "position of source item is empty.", __FILE__, __LINE__);
+		if (!cur->dim) error_and_exit ("prism", "dimension of source item is empty.", __FILE__, __LINE__);
+		if (!cur->mgz) error_and_exit ("prism", "magnetization of source item is empty.", __FILE__, __LINE__);
+
 		dx = cur->dim->x;
 		dy = cur->dim->y;
 		dz = cur->dim->z;
@@ -198,6 +209,7 @@ prism (const cvector *obs, const source *s)
 
 		cur = cur->next;
 	}
+	cvector_scale (f, scale_factor);
 	return f;
 }
 
@@ -252,7 +264,12 @@ dipole_yz (const cvector *obs, const source *s)
 
 	cur = s->begin;
 	while (cur) {
-		double	ds = 1.0;
+		double	ds;
+
+		if (!cur->pos) error_and_exit ("dipole_yz", "position of source item is empty.", __FILE__, __LINE__);
+		if (!cur->mgz) error_and_exit ("dipole_yz", "magnetization of source item is empty.", __FILE__, __LINE__);
+
+		ds = 1.0;
 		if (cur->dim) {
 			double	dy = cur->dim->y;
 			double	dz = cur->dim->z;
@@ -265,6 +282,7 @@ dipole_yz (const cvector *obs, const source *s)
 		cvector_axpy (ds, &tmp, f);
 		cur = cur->next;
 	}
+	cvector_scale (f, scale_factor);
 	return f;
 }
 
@@ -287,7 +305,11 @@ prism_yz (const cvector *obs, const source *s)
 	while (cur) {
 		double	dy, dz, ds;
 		double	flag;
-		if (!cur->dim) error_and_exit ("prism_yz", "dimension of source is empty.", __FILE__, __LINE__);
+
+		if (!cur->pos) error_and_exit ("prism_yz", "position of source item is empty.", __FILE__, __LINE__);
+		if (!cur->dim) error_and_exit ("prism_yz", "dimension of source item is empty.", __FILE__, __LINE__);
+		if (!cur->mgz) error_and_exit ("prism_yz", "magnetization of source item is empty.", __FILE__, __LINE__);
+
 		dy = cur->dim->y;
 		dz = cur->dim->z;
 		ds = dy * dz;
@@ -315,6 +337,7 @@ prism_yz (const cvector *obs, const source *s)
 
 		cur = cur->next;
 	}
+	cvector_scale (f, scale_factor);
 	return f;
 }
 
@@ -336,7 +359,7 @@ total_force (const cvector *exf, const cvector *f)
 static double
 calc_component (const cvector *f, const source *src, MgcalComponent comp)
 {
-	double	val;
+	double	val = 0.;
 	switch (comp) {
 	case MGCAL_X_COMPONENT:
 		val = f->x;

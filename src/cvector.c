@@ -60,6 +60,15 @@ cvector_free (cvector *cv)
 	return;
 }
 
+void
+cvector_scale (cvector *x, const double alpha)
+{
+	x->x *= alpha;
+	x->y *= alpha;
+	x->z *= alpha;
+	return;
+}
+
 cvector *
 cvector_copy (const cvector *src)
 {

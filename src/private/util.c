@@ -89,4 +89,3 @@ array_copy (const int n, double *dist, const double *src)
 	}
 	return true;
 }
-

@@ -56,9 +56,7 @@ grid_set_surface_0 (grid *g, const double *z1)
 static grid *
 grid_new_0 (const int nx, const int ny, const int nz, const double x[], const double y[], const double z[], const double *dx, const double *dy, const double *dz, const double *z1)
 {
-	int		i;
 	double	xx0, xx1, yy0, yy1, zz0, zz1;
-	double	incx, incy, incz;
 	grid	*g = grid_alloc ();
 
 	xx0 = x[0];
@@ -197,7 +195,7 @@ grid_get_index (const grid *g, const int n, int *i, int *j, int *k, int *h)
 void
 grid_get_nth (const grid *g, const int n, cvector *center, cvector *dim)
 {
-	int	i, j, k, h;
+	int		i = 0, j = 0, k = 0, h = 0;
 	if (!g) error_and_exit ("grid_get_nth", "grid *g is empty.", __FILE__, __LINE__);
 	if (!grid_get_index_0 (g, n, &i, &j, &k, &h)) error_and_exit ("grid_get_nth", "index invalid.", __FILE__, __LINE__);
 	if (center) {

@@ -13,7 +13,8 @@ lib_LTLIBRARIES = libmgcal.la
 
 # Sources for mgcal
 libmgcal_la_SOURCES = \
-	util.c\
+	private/util.c\
+	mgcal.c\
 	cvector.c\
 	grid.c\
 	data_array.c\
@@ -24,6 +25,6 @@ libmgcal_la_SOURCES = \
 
 # Compiler options. Here we are adding the include directory
 # to be searched for headers included in the source code.
-libmgcal_la_CFLAGS = -I$(top_srcdir)/src
-libmgcal_la_CPPFLAGS = -I$(top_srcdir)/include
+libmgcal_la_LIBADD = -L$(top_srcdir)/src
+libmgcal_la_CPPFLAGS = -I$(top_srcdir)/include -I$(top_srcdir)/include/private
 libmgcal_la_LDFLAGS = -version-info $(MGCAL_LT_VERSION)

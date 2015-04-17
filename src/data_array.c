@@ -25,7 +25,6 @@ data_array_alloc (void)
 data_array *
 data_array_new (const int n)
 {
-	int			i;
 	data_array	*array = data_array_alloc ();
 
 	array->n = n;

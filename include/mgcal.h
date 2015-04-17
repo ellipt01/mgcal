@@ -7,6 +7,8 @@ extern "C" {
 
 #include <stdbool.h>
 
+extern double	scale_factor;
+
 #include "cvector.h"
 #include "data_array.h"
 #include "grid.h"
@@ -15,6 +17,9 @@ extern "C" {
 #include "io.h"
 #include "kernel.h"
 #include "io.h"
+
+void	mgcal_set_scale_factor (const double val);
+double	mgcal_get_scale_factor (void);
 
 #ifdef __cplusplus
 }
