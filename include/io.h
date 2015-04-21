@@ -15,7 +15,8 @@ extern "C" {
 data_array	*fread_data_array (FILE *stream);
 void		fwrite_data_array_with_data (FILE *stream, const data_array *array, const double *data, const char *format);
 void		fwrite_data_array (FILE *stream, const data_array *array, const char *format);
-void		fwrite_grid (FILE *stream, const grid *g, const char *format);
+grid		*fread_grid (FILE *stream);
+void		fwrite_grid (FILE *stream, const grid *g);
 void		fwrite_grid_with_data (FILE *stream, const grid *g, const double *data, const char *format);
 
 #ifdef __cplusplus
