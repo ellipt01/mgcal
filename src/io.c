@@ -161,7 +161,7 @@ static char *
 skip_blanks (char *buf)
 {
 	char	*p = buf;
-	while (p[0] == ' ' || p[0] == '\t') p++;
+	while (p[0] == ' ' || p[0] == '\t' || p[0] == '\r') p++;
 	return p;
 }
 
@@ -193,9 +193,13 @@ read_one_line (char *buf, double *x)
 	int		i;
 	char	*p;
 	if (!buf) return 0;
-	for (i = 0, p = strtok (buf, " "); p; p = strtok (NULL, " ")) x[i++] = (double) atof (p);
+	for (i = 0, p = strtok (buf, " \t"); p; p = strtok (NULL, " \t")) {
+		if (p[0] != '\n' && p[0] != '\r') x[i++] = (double) atof (p);
+	}
 	return i;
 }
+
+const char *valname[] = {"x", "dx", "y", "dy", "z", "dz"};
 
 grid *
 fread_grid (FILE *stream)
@@ -209,7 +213,7 @@ fread_grid (FILE *stream)
 
 	// read dimensions
 	p = get_valid_line_body (stream);
-	if (!p) error_and_exit ("fread_grid", "cannot read grid correctly.", __FILE__, __LINE__);
+	if (!p) error_and_exit ("fread_grid", "cannot read grid dimension.", __FILE__, __LINE__);
 	sscanf (p, "%d %d %d", &g->nx, &g->ny, &g->nz);
 	if (g->nx <= 0 || g->ny <= 0 || g->nz <= 0)
 		error_and_exit ("fread_grid", "invalid grid dimension.", __FILE__, __LINE__);
@@ -218,11 +222,11 @@ fread_grid (FILE *stream)
 
 	// read positions
 	p = get_valid_line_body (stream);
-	if (!p) error_and_exit ("fread_grid", "cannot read grid correctly.", __FILE__, __LINE__);
+	if (!p) error_and_exit ("fread_grid", "read pos0: entry is empty.", __FILE__, __LINE__);
 	g->pos0 = cvector_new (0., 0., 0.);
 	sscanf (p, "%lf %lf %lf", &g->pos0->x, &g->pos0->y, &g->pos0->z);
 	p = get_valid_line_body (stream);
-	if (!p) error_and_exit ("fread_grid", "cannot read grid correctly.", __FILE__, __LINE__);
+	if (!p) error_and_exit ("fread_grid", "read pos1: entry is empty.", __FILE__, __LINE__);
 	g->pos1 = cvector_new (0., 0., 0.);
 	sscanf (p, "%lf %lf %lf", &g->pos1->x, &g->pos1->y, &g->pos1->z);
 
@@ -269,7 +273,11 @@ fread_grid (FILE *stream)
 			if (p == NULL) break;
 			i += read_one_line (p, val + i);
 		}
-		if (i != n) error_and_exit ("fread_grid", "cannot read grid correctly.", __FILE__, __LINE__);
+		if (i != n) {
+			char	msg[80];
+			sprintf (msg, "size of %s is mismatch.", valname[k]);
+			error_and_exit ("fread_grid", msg, __FILE__, __LINE__);
+		}
 
 	}
 	// read z1
@@ -280,7 +288,7 @@ fread_grid (FILE *stream)
 		if (!g->z1) g->z1 = (double *) malloc (g->nh * sizeof (double));
 		i += read_one_line (p, g->z1 + i);
 	}
-	if (i > 0 && i != g->nh) error_and_exit ("fread_grid", "cannot read grid correctly.", __FILE__, __LINE__);
+	if (i > 0 && i != g->nh) error_and_exit ("fread_grid", "size of z1 is mismatch.", __FILE__, __LINE__);
 
 	if (!is_grid_valid (g)) error_and_exit ("fread_grid", "cannot read grid correctly.", __FILE__, __LINE__);
 
