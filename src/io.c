@@ -13,6 +13,7 @@
 #include "cvector.h"
 #include "data_array.h"
 #include "grid.h"
+#include "private/util.h"
 
 typedef struct s_datalist	datalist;
 
@@ -139,16 +140,48 @@ fprintf_array (FILE *stream, const int noneline, const int n, const double *arra
 	return;
 }
 
+static bool
+is_grid_valid (const grid *g)
+{
+	if (!g) return false;
+	if (g->nx <= 0 || g->ny <= 0 || g->nz <= 0) return false;
+	if (g->nh <= 0 || g->n <= 0) return false;
+	if (!g->pos0) return false;
+	if (!g->pos1) return false;
+	if (!g->x) return false;
+	if (!g->dx) return false;
+	if (!g->y) return false;
+	if (!g->dy) return false;
+	if (!g->z) return false;
+	if (!g->dz) return false;
+	return true;
+}
+
 static char *
-read_valid_line (FILE *stream)
+skip_blanks (char *buf)
+{
+	char	*p = buf;
+	while (p[0] == ' ' || p[0] == '\t') p++;
+	return p;
+}
+
+static bool
+is_valid_line (char *p)
+{
+	if (p == NULL) return false;
+	if (p[0] == '#' || p[0] == '\n') return false;
+	return true;
+}
+
+static char *
+get_valid_line_body (FILE *stream)
 {
 	char	buf[BUFSIZ];
 	char	*p = NULL;
 	while (1) {
 		if (fgets (buf, BUFSIZ, stream) == NULL) return NULL;
-		p = buf;
-		while (p[0] == ' ' || p[0] == '\t') p++;
-		if (p[0] == '#' || p[0] == '\n') continue;
+		p = skip_blanks (buf);
+		if (!is_valid_line (p)) continue;
 		break;
 	}
 	return p;
@@ -167,79 +200,89 @@ read_one_line (char *buf, double *x)
 grid *
 fread_grid (FILE *stream)
 {
-	int		i;
+	int		i, k;
 	char	*p;
 	grid	*g;
 
 	g = (grid *) malloc (sizeof (grid));
+	g->z1 = NULL;
 
 	// read dimensions
-	p = read_valid_line (stream);
+	p = get_valid_line_body (stream);
+	if (!p) error_and_exit ("fread_grid", "cannot read grid correctly.", __FILE__, __LINE__);
 	sscanf (p, "%d %d %d", &g->nx, &g->ny, &g->nz);
+	if (g->nx <= 0 || g->ny <= 0 || g->nz <= 0)
+		error_and_exit ("fread_grid", "invalid grid dimension.", __FILE__, __LINE__);
 	g->nh = g->nx * g->ny;
 	g->n = g->nh * g->nz;
 
 	// read positions
-	p = read_valid_line (stream);
+	p = get_valid_line_body (stream);
+	if (!p) error_and_exit ("fread_grid", "cannot read grid correctly.", __FILE__, __LINE__);
 	g->pos0 = cvector_new (0., 0., 0.);
 	sscanf (p, "%lf %lf %lf", &g->pos0->x, &g->pos0->y, &g->pos0->z);
-	p = read_valid_line (stream);
+	p = get_valid_line_body (stream);
+	if (!p) error_and_exit ("fread_grid", "cannot read grid correctly.", __FILE__, __LINE__);
 	g->pos1 = cvector_new (0., 0., 0.);
 	sscanf (p, "%lf %lf %lf", &g->pos1->x, &g->pos1->y, &g->pos1->z);
 
-	// read x
-	g->x = (double *) malloc (g->nx * sizeof (double));
-	i = 0;
-	while (i < g->nx) {
-		int	k = read_one_line (read_valid_line (stream), g->x + i);
-		i += k;
-	}
-	// read dx
-	g->dx = (double *) malloc (g->nx * sizeof (double));
-	i = 0;
-	while (i < g->nx) {
-		int	k = read_one_line (read_valid_line (stream), g->dx + i);
-		i += k;
-	}
-	// read y
-	g->y = (double *) malloc (g->ny * sizeof (double));
-	i = 0;
-	while (i < g->ny) {
-		int	k = read_one_line (read_valid_line (stream), g->y + i);
-		i += k;
-	}
-	// read dy
-	g->dy = (double *) malloc (g->ny * sizeof (double));
-	i = 0;
-	while (i < g->ny) {
-		int	k = read_one_line (read_valid_line (stream), g->dy + i);
-		i += k;
-	}
-	// read z
-	g->z = (double *) malloc (g->nz * sizeof (double));
-	i = 0;
-	while (i < g->nz) {
-		int	k = read_one_line (read_valid_line (stream), g->z + i);
-		i += k;
-	}
-	// read dz
-	g->dz = (double *) malloc (g->nz * sizeof (double));
-	i = 0;
-	while (i < g->nz) {
-		int	k = read_one_line (read_valid_line (stream), g->dz + i);
-		i += k;
+	for (k = 0; k <= 5; k++) {
+		int		n;
+		double	*val;
+		switch (k) {
+		case 0:
+			g->x = (double *) malloc (g->nx * sizeof (double));
+			n = g->nx;
+			val = g->x;
+			break;
+		case 1:
+			g->dx = (double *) malloc (g->nx * sizeof (double));
+			n = g->nx;
+			val = g->dx;
+			break;
+		case 2:
+			g->y = (double *) malloc (g->ny * sizeof (double));
+			n = g->ny;
+			val = g->y;
+			break;
+		case 3:
+			g->dy = (double *) malloc (g->ny * sizeof (double));
+			n = g->ny;
+			val = g->dy;
+			break;
+		case 4:
+			g->z = (double *) malloc (g->nz * sizeof (double));
+			n = g->nz;
+			val = g->z;
+			break;
+		case 5:
+			g->dz = (double *) malloc (g->nz * sizeof (double));
+			n = g->nz;
+			val = g->dz;
+			break;
+		default:
+			break;
+		}
+		i = 0;
+		while (i < n) {
+			char	*p = get_valid_line_body (stream);
+			if (p == NULL) break;
+			i += read_one_line (p, val + i);
+		}
+		if (i != n) error_and_exit ("fread_grid", "cannot read grid correctly.", __FILE__, __LINE__);
+
 	}
 	// read z1
-	g->z1 = (double *) malloc (g->nh * sizeof (double));
 	i = 0;
 	while (i < g->nh) {
-		int	k = read_one_line (read_valid_line (stream), g->z1 + i);
-		i += k;
+		char	*p = get_valid_line_body (stream);
+		if (p == NULL) break;
+		if (!g->z1) g->z1 = (double *) malloc (g->nh * sizeof (double));
+		i += read_one_line (p, g->z1 + i);
 	}
-	if (i == 0) {
-		free (g->z1);
-		g->z1 = NULL;
-	}
+	if (i > 0 && i != g->nh) error_and_exit ("fread_grid", "cannot read grid correctly.", __FILE__, __LINE__);
+
+	if (!is_grid_valid (g)) error_and_exit ("fread_grid", "cannot read grid correctly.", __FILE__, __LINE__);
 
 	return g;
 }
@@ -249,36 +292,45 @@ const int	n_oneline = 10;
 void
 fwrite_grid (FILE *stream, const grid *g)
 {
-	fprintf (stream, "# dimension [nx, ny, nz]\n");
+	if (!is_grid_valid (g)) error_and_exit ("fwrite_grid", "grid is not valid.", __FILE__, __LINE__);
+
+	fprintf (stream, "### GRID DATA ###\n");
+
+	fprintf (stream, "# [NX, NY, NZ] : dimension\n");
 	fprintf (stream, "%d %d %d\n\n", g->nx, g->ny, g->nz);
 
-	fprintf (stream, "# South-West (left-bottom) position [x, y, z]\n");
+	fprintf (stream, "# P0 = [X0, Y0, Z0] : South-West (left-bottom) position\n");
 	fprintf (stream, "%f %f %f\n\n", g->pos0->x, g->pos0->y, g->pos0->z);
 
-	fprintf (stream, "# North-East (right-top) position [x, y, z]\n");
+	fprintf (stream, "# P1 = [X1, Y1, Z1] : North-East (right-top) position\n");
 	fprintf (stream, "%f %f %f\n\n", g->pos1->x, g->pos1->y, g->pos1->z);
 
-	fprintf (stream, "# grid x\n");
+	fprintf (stream, "# X\n");
 	fprintf_array (stream, n_oneline, g->nx, g->x, "%f");
-	fprintf (stream, "# grid inc x: dx\n");
+
+	fprintf (stream, "# DX\n");
 	fprintf_array (stream, n_oneline, g->nx, g->dx, "%f");
 	fprintf (stream, "\n");
 
-	fprintf (stream, "# grid y\n");
+	fprintf (stream, "# Y\n");
 	fprintf_array (stream, n_oneline, g->ny, g->y, "%f");
-	fprintf (stream, "# grid inc y: dy\n");
+
+	fprintf (stream, "# DY\n");
 	fprintf_array (stream, n_oneline, g->ny, g->dy, "%f");
 	fprintf (stream, "\n");
 
-	fprintf (stream, "# grid z\n");
+	fprintf (stream, "# Z\n");
 	fprintf_array (stream, n_oneline, g->nz, g->z, "%f");
-	fprintf (stream, "# grid inc z: dz\n");
+
+	fprintf (stream, "# DZ\n");
 	fprintf_array (stream, n_oneline, g->nz, g->dz, "%f");
 	fprintf (stream, "\n");
 
-	fprintf (stream, "# grid z1\n");
-	fprintf_array (stream, n_oneline, g->nh, g->z1, "%f");
-	fprintf (stream, "\n");
+	if (g->z1) {
+		fprintf (stream, "# Z1 : surface topography\n");
+		fprintf_array (stream, n_oneline, g->nh, g->z1, "%f");
+		fprintf (stream, "\n");
+	}
 
 	return;
 }
@@ -289,6 +341,9 @@ fwrite_grid_with_data (FILE *stream, const grid *g, const double *data, const ch
 	int		n;
 	cvector	*pos;
 	char	fm[BUFSIZ];
+
+	if (!g) error_and_exit ("fwrite_grid", "grid is empty.", __FILE__, __LINE__);
+
 	if (!format) strcpy (fm, "%f %f %f %f\n");
 	else sprintf (fm, "%s\n", format);
 
