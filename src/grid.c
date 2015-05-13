@@ -28,6 +28,8 @@ grid_alloc (void)
 	g->dy = NULL;
 	g->dz = NULL;
 
+	g->data = NULL;
+
 	return g;
 }
 

@@ -26,6 +26,7 @@ struct s_grid {
 	double		*dy;
 	double		*dz;
 
+	void		*data;
 };
 
 grid	*grid_new (const int nx, const int ny, const int nz, const double x[], const double y[], const double z[]);
