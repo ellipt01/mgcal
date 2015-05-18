@@ -14,8 +14,9 @@ struct s_grid {
 	int			ny;
 	int			nz;
 
-	cvector		*pos0;
-	cvector		*pos1;
+	double		xrange[2];
+	double		yrange[2];
+	double		zrange[2];
 
 	double		*x;
 	double		*y;

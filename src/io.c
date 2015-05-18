@@ -9,6 +9,8 @@
 #include <stdlib.h>
 #include <stdbool.h>
 #include <string.h>
+#include <math.h>
+#include <float.h>
 
 #include "cvector.h"
 #include "data_array.h"
@@ -141,13 +143,18 @@ fprintf_array (FILE *stream, const int noneline, const int n, const double *arra
 }
 
 static bool
+zero_range (const double r[])
+{
+	return (fabs (r[1] - r[0]) < DBL_EPSILON);
+}
+
+static bool
 is_grid_valid (const grid *g)
 {
 	if (!g) return false;
 	if (g->nx <= 0 || g->ny <= 0 || g->nz <= 0) return false;
 	if (g->nh <= 0 || g->n <= 0) return false;
-	if (!g->pos0) return false;
-	if (!g->pos1) return false;
+	if (zero_range (g->xrange) && zero_range (g->yrange) && zero_range (g->zrange)) return false;
 	if (!g->x) return false;
 	if (!g->dx) return false;
 	if (!g->y) return false;
@@ -223,12 +230,10 @@ fread_grid (FILE *stream)
 	// read positions
 	p = get_valid_line_body (stream);
 	if (!p) error_and_exit ("fread_grid", "read pos0: entry is empty.", __FILE__, __LINE__);
-	g->pos0 = cvector_new (0., 0., 0.);
-	sscanf (p, "%lf %lf %lf", &g->pos0->x, &g->pos0->y, &g->pos0->z);
+	sscanf (p, "%lf %lf %lf", &g->xrange[0], &g->yrange[0], &g->zrange[0]);
 	p = get_valid_line_body (stream);
 	if (!p) error_and_exit ("fread_grid", "read pos1: entry is empty.", __FILE__, __LINE__);
-	g->pos1 = cvector_new (0., 0., 0.);
-	sscanf (p, "%lf %lf %lf", &g->pos1->x, &g->pos1->y, &g->pos1->z);
+	sscanf (p, "%lf %lf %lf", &g->xrange[1], &g->yrange[1], &g->zrange[1]);
 
 	for (k = 0; k <= 5; k++) {
 		int		n;
@@ -308,10 +313,10 @@ fwrite_grid (FILE *stream, const grid *g)
 	fprintf (stream, "%d %d %d\n\n", g->nx, g->ny, g->nz);
 
 	fprintf (stream, "# P0 = [X0, Y0, Z0] : South-West (left-bottom) position\n");
-	fprintf (stream, "%f %f %f\n\n", g->pos0->x, g->pos0->y, g->pos0->z);
+	fprintf (stream, "%f %f %f\n\n", g->xrange[0], g->yrange[0], g->zrange[0]);
 
 	fprintf (stream, "# P1 = [X1, Y1, Z1] : North-East (right-top) position\n");
-	fprintf (stream, "%f %f %f\n\n", g->pos1->x, g->pos1->y, g->pos1->z);
+	fprintf (stream, "%f %f %f\n\n", g->xrange[1], g->yrange[1], g->zrange[1]);
 
 	fprintf (stream, "# X\n");
 	fprintf_array (stream, n_oneline, g->nx, g->x, "%f");

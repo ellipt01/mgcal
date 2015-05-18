@@ -20,33 +20,8 @@ bool
 array_set_all (const int n, double *x, const double val)
 {
 	int		i;
-	int		mod;
-	double	*xi;
-
 	if (!x) return false;
-
-	mod = n % 4;
-	xi = x;
-	if (mod == 1) {
-		xi[0] = val;
-		xi++;
-	} else if (mod == 1) {
-		xi[0] = val;
-		xi[1] = val;
-		xi += 2;
-	} else if (mod == 2) {
-		xi[0] = val;
-		xi[1] = val;
-		xi[2] = val;
-		xi += 3;
-	}
-	for (i = mod; i < n; i += 4) {
-		xi[0] = val;
-		xi[1] = val;
-		xi[2] = val;
-		xi[3] = val;
-		xi += 4;
-	}
+	for (i = 0; i < n; i++) x[i] = val;
 	return true;
 }
 
@@ -54,38 +29,15 @@ bool
 array_copy (const int n, double *dist, const double *src)
 {
 	int		i;
-	int		mod;
-	double	*di;
-	double	*si;
-
 	if (!dist || !src) return false;
-
-	mod = n % 4;
-	di = dist;
-	si = (double *) src;
-	if (mod == 1) {
-		di[0] = si[0];
-		di++;
-		si++;
-	} else if (mod == 2) {
-		di[0] = si[0];
-		di[1] = si[1];
-		di += 2;
-		si += 2;
-	} else if (mod == 3) {
-		di[0] = si[0];
-		di[1] = si[1];
-		di[2] = si[2];
-		di += 3;
-		si += 3;
-	}
-	for (i = mod; i < n; i += 4) {
-		di[0] = si[0];
-		di[1] = si[1];
-		di[2] = si[2];
-		di[3] = si[3];
-		di += 4;
-		si += 4;
-	}
+	for (i = 0; i < n; i++) dist[i] = src[i];
 	return true;
+}
+
+void
+set_range (double p[], const double x0, const double x1)
+{
+	p[0] = x0;
+	p[1] = x1;
+	return;
 }

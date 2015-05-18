@@ -16,8 +16,9 @@ grid_alloc (void)
 	g->ny = 0;
 	g->nz = 0;
 
-	g->pos0 = NULL;
-	g->pos1 = NULL;
+	set_range (g->xrange, 0., 0.);
+	set_range (g->yrange, 0., 0.);
+	set_range (g->zrange, 0., 0.);
 
 	g->x = NULL;
 	g->y = NULL;
@@ -102,8 +103,9 @@ grid_new_0 (const int nx, const int ny, const int nz, const double x[], const do
 	g->z = (double *) malloc (g->nz * sizeof (double));
 	zz1 = grid_array (g->nz, zz0, g->dz, g->z);
 
-	g->pos0 = cvector_new (xx0, yy0, zz0);
-	g->pos1 = cvector_new (xx1, yy1, zz1);
+	set_range (g->xrange, xx0, xx1);
+	set_range (g->yrange, yy0, yy1);
+	set_range (g->zrange, zz0, zz1);
 
 	if (z1) {
 		if (!grid_set_surface_0 (g, z1)) return NULL;
@@ -143,8 +145,6 @@ void
 grid_free (grid *g)
 {
 	if (g) {
-		if (g->pos0) cvector_free (g->pos0);
-		if (g->pos1) cvector_free (g->pos1);
 		if (g->x) free (g->x);
 		if (g->y) free (g->y);
 		if (g->z) free (g->z);
