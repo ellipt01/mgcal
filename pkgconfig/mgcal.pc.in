@@ -6,5 +6,5 @@ includedir=@includedir@
 Name: @PACKAGE@
 Description: @MGCAL_DESCRIPTION@
 Version: @VERSION@
-Libs: -L${libdir} -lmgcal
+Libs: -L${libdir} -lmgcal @OMPFLAGS@
 Cflags: -I${includedir}/mgcal
