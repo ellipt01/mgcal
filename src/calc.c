@@ -63,20 +63,9 @@ prism_kernel (cvector *f, const double x, const double y, const double z, const 
 
 	double	r = sqrt (x * x + y * y + z * z);
 
-	if (fabs (y) <= sqrt (DBL_EPSILON) && fabs (z) <= sqrt (DBL_EPSILON) && x < 0.)
-		lnx = - log (r - x);
-	else
-		lnx = log (r + x);
-
-	if (fabs (x) <= sqrt (DBL_EPSILON) && fabs (z) <= sqrt (DBL_EPSILON) && y < 0.)
-		lny = - log (r - y);
-	else
-		lny = log (r + y);
-
-	if (fabs (x) <= sqrt (DBL_EPSILON) && fabs (y) <= sqrt (DBL_EPSILON) && z < 0.)
-		lnz = - log (r - z);
-	else
-		lnz = log (r + z);
+	lnx = (fabs (r + x) > DBL_EPSILON) ? log (r + x) : - log (r - x);
+	lny = (fabs (r + y) > DBL_EPSILON) ? log (r + y) : - log (r - y);
+	lnz = (fabs (r + z) > DBL_EPSILON) ? log (r + z) : - log (r - z);
 
 	{
 		double	jx = mgz->x;
