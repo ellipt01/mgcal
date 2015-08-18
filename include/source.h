@@ -34,7 +34,6 @@ source	*source_new (const double inc, const double dec);
 void	source_free (source *src);
 void	source_set_position (source *src, const double x, const double y, const double z);
 void	source_set_dimension (source *src, const double dx, const double dy, const double dz);
-void	source_set_external_field (source *src, const double inc, const double dec);
 void	source_set_magnetization (source *src, const double mgz, const double inc, const double dec);
 
 #ifdef __cplusplus
