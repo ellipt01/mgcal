@@ -42,15 +42,15 @@ example_prism (FILE *stream, const int nx, const int ny, const int nz, const dou
 	t = omp_get_wtime ();
 #pragma omp parallel
 	{
-		int		n;
-		cvector	*obs = cvector_new (0., 0., 0.);
+		int			n;
+		vector3d	*obs = vector3d_new (0., 0., 0.);
 
 #pragma omp for
 		for (n = 0; n < g->n; n++) {
 			grid_get_nth (g, n, obs, NULL);
 			a[n] = f->function (obs, s, f->parameter);
 		}
-		cvector_free (obs);
+		vector3d_free (obs);
 	}
 	fprintf (stderr, "time(4) = %.4e\n", omp_get_wtime () - t);
 

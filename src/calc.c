@@ -10,10 +10,10 @@
 #include <math.h>
 #include <float.h>
 
-#include "cvector.h"
+#include "../include/vector3d.h"
+#include "private/util.h"
 #include "source.h"
 #include "calc.h"
-#include "private/util.h"
 
 double scale_factor = 1.;
 
@@ -24,7 +24,7 @@ sign (const double val)
 }
 
 static void
-dipole_kernel (cvector *f, const double x, const double y, const double z, const cvector *mgz)
+dipole_kernel (vector3d *f, const double x, const double y, const double z, const vector3d *mgz)
 {
 	double	fx, fy, fz;
 
@@ -51,12 +51,12 @@ dipole_kernel (cvector *f, const double x, const double y, const double z, const
 		+ jy * (3.0 * z * y / r5)
 		- jz * (1.0 / r3 - 3. * pow (z, 2.) / r5);
 
-	cvector_set (f, fx, fy, fz);
+	vector3d_set (f, fx, fy, fz);
 	return;
 }
 
 static void
-prism_kernel (cvector *f, const double x, const double y, const double z, const cvector *mgz)
+prism_kernel (vector3d *f, const double x, const double y, const double z, const vector3d *mgz)
 {
 	double	fx, fy, fz;
 	double	lnx, lny, lnz;
@@ -85,27 +85,27 @@ prism_kernel (cvector *f, const double x, const double y, const double z, const 
 			- jz * atan2 (x * y, z * r);
 	}
 
-	cvector_set (f, fx, fy, fz);
+	vector3d_set (f, fx, fy, fz);
 	return;
 }
 
-cvector *
-dipole (const cvector *obs, const source *s)
+vector3d *
+dipole (const vector3d *obs, const source *s)
 {
 	double		x, y, z;
 	double		x0, y0, z0;
-	cvector		*f;
-	cvector		tmp;
+	vector3d		*f;
+	vector3d		tmp;
 	source_item	*cur;
 
-	if (!obs) error_and_exit ("dipole", "cvector *obs is empty.", __FILE__, __LINE__);
+	if (!obs) error_and_exit ("dipole", "vector3d *obs is empty.", __FILE__, __LINE__);
 	if (!s) error_and_exit ("dipole", "source *s is empty.", __FILE__, __LINE__);
 
 	x0 = obs->x;
 	y0 = obs->y;
 	z0 = obs->z;
 
-	f = cvector_new (0., 0., 0.);
+	f = vector3d_new (0., 0., 0.);
 
 	cur = s->begin;
 	while (cur) {
@@ -125,31 +125,31 @@ dipole (const cvector *obs, const source *s)
 		y = cur->pos->y;
 		z = cur->pos->z;
 		dipole_kernel (&tmp, x - x0, y - y0, z - z0, cur->mgz);
-		cvector_axpy (dv, &tmp, f);	// f = f + dv * tmp
+		vector3d_axpy (dv, &tmp, f);	// f = f + dv * tmp
 		cur = cur->next;
 	}
-	cvector_scale (f, scale_factor);
+	vector3d_scale (f, scale_factor);
 	return f;
 }
 
-cvector *
-prism (const cvector *obs, const source *s)
+vector3d *
+prism (const vector3d *obs, const source *s)
 {
 	double		a[2], b[2], c[2];
 	double		x, y, z;
 	double		x0, y0, z0;
-	cvector		*f;
-	cvector		tmp[8];
+	vector3d		*f;
+	vector3d		tmp[8];
 	source_item	*cur;
 
-	if (!obs) error_and_exit ("prism", "cvector *obs is empty.", __FILE__, __LINE__);
+	if (!obs) error_and_exit ("prism", "vector3d *obs is empty.", __FILE__, __LINE__);
 	if (!s) error_and_exit ("prism", "source *s is empty.", __FILE__, __LINE__);
 
 	x0 = obs->x;
 	y0 = obs->y;
 	z0 = obs->z;
 
-	f = cvector_new (0., 0., 0.);
+	f = vector3d_new (0., 0., 0.);
 
 	cur = s->begin;
 	while (cur) {
@@ -198,12 +198,12 @@ prism (const cvector *obs, const source *s)
 
 		cur = cur->next;
 	}
-	cvector_scale (f, scale_factor);
+	vector3d_scale (f, scale_factor);
 	return f;
 }
 
 static void
-dipole_yz_kernel (cvector *f, const double y, const double z, const cvector *mgz)
+dipole_yz_kernel (vector3d *f, const double y, const double z, const vector3d *mgz)
 {
 	double	fy, fz;
 
@@ -216,12 +216,12 @@ dipole_yz_kernel (cvector *f, const double y, const double z, const cvector *mgz
 	fy = jy * (1. / r2 - 2. * pow (y, 2.) / r4) - jz * 2. * y * z / r4;
 	fz = - jy * 2. * y * z / r4 + jz * (1. / r2 - 2. * pow (z, 2.) / r4);
 
-	cvector_set (f, 0., - 2. * fy, - 2. * fz);
+	vector3d_set (f, 0., - 2. * fy, - 2. * fz);
 	return;
 }
 
 static void
-prism_yz_kernel (cvector *f, const double y, const double z, const cvector *mgz)
+prism_yz_kernel (vector3d *f, const double y, const double z, const vector3d *mgz)
 {
 	double	fy, fz;
 
@@ -233,23 +233,23 @@ prism_yz_kernel (cvector *f, const double y, const double z, const cvector *mgz)
 	fy = jy * atan (z / y) + jz * log (r);
 	fz = jy * log (r) + jz * atan (y / z);
 
-	cvector_set (f, 0., - 2. * fy, - 2. * fz);
+	vector3d_set (f, 0., - 2. * fy, - 2. * fz);
 	return;
 }
 
-cvector *
-dipole_yz (const cvector *obs, const source *s)
+vector3d *
+dipole_yz (const vector3d *obs, const source *s)
 {
 	double		y, z;
 	double		y0, z0;
-	cvector		*f;
-	cvector		tmp;
+	vector3d		*f;
+	vector3d		tmp;
 	source_item	*cur;
 
 	y0 = obs->y;
 	z0 = obs->z;
 
-	f = cvector_new (0., 0., 0.);
+	f = vector3d_new (0., 0., 0.);
 
 	cur = s->begin;
 	while (cur) {
@@ -268,27 +268,27 @@ dipole_yz (const cvector *obs, const source *s)
 		z = cur->pos->z - z0;
 
 		dipole_yz_kernel (&tmp, y, z, cur->mgz);
-		cvector_axpy (ds, &tmp, f);
+		vector3d_axpy (ds, &tmp, f);
 		cur = cur->next;
 	}
-	cvector_scale (f, scale_factor);
+	vector3d_scale (f, scale_factor);
 	return f;
 }
 
-cvector *
-prism_yz (const cvector *obs, const source *s)
+vector3d *
+prism_yz (const vector3d *obs, const source *s)
 {
 	double		b[2], c[2];
 	double		y, z;
 	double		y0, z0;
-	cvector		*f;
-	cvector		tmp[4];
+	vector3d		*f;
+	vector3d		tmp[4];
 	source_item	*cur;
 
 	y0 = obs->y;
 	z0 = obs->z;
 
-	f = cvector_new (0., 0., 0.);
+	f = vector3d_new (0., 0., 0.);
 
 	cur = s->begin;
 	while (cur) {
@@ -326,7 +326,7 @@ prism_yz (const cvector *obs, const source *s)
 
 		cur = cur->next;
 	}
-	cvector_scale (f, scale_factor);
+	vector3d_scale (f, scale_factor);
 	return f;
 }
 
@@ -338,15 +338,15 @@ typedef enum {
 } MgcalComponent;
 
 double
-total_force (const cvector *exf, const cvector *f)
+total_force (const vector3d *exf, const vector3d *f)
 {
-	if (exf == NULL) error_and_exit ("total_force", "cvector *exf is empty.", __FILE__, __LINE__);
-	if (f == NULL) error_and_exit ("total_force", "cvector *f is empty.", __FILE__, __LINE__);
+	if (exf == NULL) error_and_exit ("total_force", "vector3d *exf is empty.", __FILE__, __LINE__);
+	if (f == NULL) error_and_exit ("total_force", "vector3d *f is empty.", __FILE__, __LINE__);
 	return exf->x * f->x + exf->y * f->y + exf->z * f->z;
 }
 
 static double
-calc_component (const cvector *f, const source *src, MgcalComponent comp)
+calc_component (const vector3d *f, const source *src, MgcalComponent comp)
 {
 	double	val = 0.;
 	switch (comp) {
@@ -372,124 +372,124 @@ calc_component (const cvector *f, const source *src, MgcalComponent comp)
 
 /*** dipole ***/
 static double
-component_dipole (const cvector *obs, const source *src, MgcalComponent comp)
+component_dipole (const vector3d *obs, const source *src, MgcalComponent comp)
 {
-	cvector	*f = dipole (obs, src);
+	vector3d	*f = dipole (obs, src);
 	double	val = calc_component (f, src, comp);
-	cvector_free (f);
+	vector3d_free (f);
 	return val;
 }
 
 double
-x_component_dipole (const cvector *obs, const source *src, void *data)
+x_component_dipole (const vector3d *obs, const source *src, void *data)
 {
 	return component_dipole (obs, src, MGCAL_X_COMPONENT);
 }
 
 double
-y_component_dipole (const cvector *obs, const source *src, void *data)
+y_component_dipole (const vector3d *obs, const source *src, void *data)
 {
 	return component_dipole (obs, src, MGCAL_Y_COMPONENT);
 }
 
 double
-z_component_dipole (const cvector *obs, const source *src, void *data)
+z_component_dipole (const vector3d *obs, const source *src, void *data)
 {
 	return component_dipole (obs, src, MGCAL_Z_COMPONENT);
 }
 
 double
-total_force_dipole (const cvector *obs, const source *src, void *data)
+total_force_dipole (const vector3d *obs, const source *src, void *data)
 {
 	return component_dipole (obs, src, MGCAL_TOTAL_FORCE);
 }
 
 /*** prism ***/
 static double
-component_prism (const cvector *obs, const source *src, MgcalComponent comp)
+component_prism (const vector3d *obs, const source *src, MgcalComponent comp)
 {
-	cvector	*f = prism (obs, src);
+	vector3d	*f = prism (obs, src);
 	double	val = calc_component (f, src, comp);
-	cvector_free (f);
+	vector3d_free (f);
 	return val;
 }
 
 double
-x_component_prism (const cvector *obs, const source *src, void *data)
+x_component_prism (const vector3d *obs, const source *src, void *data)
 {
 	return component_prism (obs, src, MGCAL_X_COMPONENT);
 }
 
 double
-y_component_prism (const cvector *obs, const source *src, void *data)
+y_component_prism (const vector3d *obs, const source *src, void *data)
 {
 	return component_prism (obs, src, MGCAL_Y_COMPONENT);
 }
 
 double
-z_component_prism (const cvector *obs, const source *src, void *data)
+z_component_prism (const vector3d *obs, const source *src, void *data)
 {
 	return component_prism (obs, src, MGCAL_Z_COMPONENT);
 }
 
 double
-total_force_prism (const cvector *obs, const source *src, void *data)
+total_force_prism (const vector3d *obs, const source *src, void *data)
 {
 	return component_prism (obs, src, MGCAL_TOTAL_FORCE);
 }
 
 /*** dipole yz ***/
 static double
-component_dipole_yz (const cvector *obs, const source *src, MgcalComponent comp)
+component_dipole_yz (const vector3d *obs, const source *src, MgcalComponent comp)
 {
-	cvector	*f = dipole_yz (obs, src);
+	vector3d	*f = dipole_yz (obs, src);
 	double	val = calc_component (f, src, comp);
-	cvector_free (f);
+	vector3d_free (f);
 	return val;
 }
 
 double
-y_component_dipole_yz (const cvector *obs, const source *src, void *data)
+y_component_dipole_yz (const vector3d *obs, const source *src, void *data)
 {
 	return component_dipole_yz (obs, src, MGCAL_Y_COMPONENT);
 }
 
 double
-z_component_dipole_yz (const cvector *obs, const source *src, void *data)
+z_component_dipole_yz (const vector3d *obs, const source *src, void *data)
 {
 	return component_dipole_yz (obs, src, MGCAL_Z_COMPONENT);
 }
 
 double
-total_force_dipole_yz (const cvector *obs, const source *src, void *data)
+total_force_dipole_yz (const vector3d *obs, const source *src, void *data)
 {
 	return component_dipole_yz (obs, src, MGCAL_TOTAL_FORCE);
 }
 
 /*** prism yz ***/
 static double
-component_prism_yz (const cvector *obs, const source *src, MgcalComponent comp)
+component_prism_yz (const vector3d *obs, const source *src, MgcalComponent comp)
 {
-	cvector	*f = prism_yz (obs, src);
+	vector3d	*f = prism_yz (obs, src);
 	double	val = calc_component (f, src, comp);
-	cvector_free (f);
+	vector3d_free (f);
 	return val;
 }
 
 double
-y_component_prism_yz (const cvector *obs, const source *src, void *data)
+y_component_prism_yz (const vector3d *obs, const source *src, void *data)
 {
 	return component_prism_yz (obs, src, MGCAL_Y_COMPONENT);
 }
 
 double
-z_component_prism_yz (const cvector *obs, const source *src, void *data)
+z_component_prism_yz (const vector3d *obs, const source *src, void *data)
 {
 	return component_prism_yz (obs, src, MGCAL_Z_COMPONENT);
 }
 
 double
-total_force_prism_yz (const cvector *obs, const source *src, void *data)
+total_force_prism_yz (const vector3d *obs, const source *src, void *data)
 {
 	return component_prism_yz (obs, src, MGCAL_TOTAL_FORCE);
 }

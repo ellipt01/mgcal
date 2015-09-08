@@ -16,14 +16,14 @@ typedef struct s_source_item	source_item;
 typedef struct s_source			source;
 
 struct s_source_item {
-	cvector		*mgz;	// magnetization
-	cvector		*pos;	// center of the magnetized body
-	cvector		*dim;	// dimension of source
+	vector3d	*mgz;	// magnetization
+	vector3d	*pos;	// center of the magnetized body
+	vector3d	*dim;	// dimension of source
 	source_item	*next;
 };
 
 struct s_source {
-	cvector		*exf;	// external field
+	vector3d	*exf;	// external field
 	source_item	*item;
 	source_item	*begin;
 	source_item	*end;

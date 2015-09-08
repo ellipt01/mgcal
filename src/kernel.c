@@ -14,7 +14,7 @@
 #include <omp.h>
 #endif
 
-#include "cvector.h"
+#include "../include/vector3d.h"
 #include "source.h"
 #include "data_array.h"
 #include "grid.h"
@@ -47,7 +47,7 @@ mgcal_func_free (mgcal_func *f)
 }
 
 void
-kernel_matrix_set (double *a, const data_array *array, const grid *g, const cvector *mgz, const cvector *exf, const mgcal_func *f)
+kernel_matrix_set (double *a, const data_array *array, const grid *g, const vector3d *mgz, const vector3d *exf, const mgcal_func *f)
 {
 	int		m;
 	int		nx;
@@ -65,15 +65,15 @@ kernel_matrix_set (double *a, const data_array *array, const grid *g, const cvec
 
 #pragma omp parallel
 	{
-		int		i, j, k, l;
-		double	*z1 = NULL;
-		cvector	*obs = cvector_new (0., 0., 0.);
-		source	*src = source_new (0., 0.);
-		if (exf) src->exf = cvector_copy (exf);
+		int			i, j, k, l;
+		double		*z1 = NULL;
+		vector3d	*obs = vector3d_new (0., 0., 0.);
+		source		*src = source_new (0., 0.);
+		if (exf) src->exf = vector3d_copy (exf);
 		source_append_item (src);
-		src->begin->pos = cvector_new (0., 0., 0.);
-		src->begin->dim = cvector_new (0., 0., 0.);
-		if (mgz) src->begin->mgz = cvector_copy (mgz);
+		src->begin->pos = vector3d_new (0., 0., 0.);
+		src->begin->dim = vector3d_new (0., 0., 0.);
+		if (mgz) src->begin->mgz = vector3d_copy (mgz);
 
 #pragma omp for
 		for (k = 0; k < nz; k++) {
@@ -92,10 +92,10 @@ kernel_matrix_set (double *a, const data_array *array, const grid *g, const cvec
 					double	*zl = array->z;
 					double	z1k = *zk;
 					if (z1) z1k += z1[i];
-					cvector_set (src->begin->pos, *xi, *yj, z1k);
-					cvector_set (src->begin->dim, *dxi, *dyj, *dzk);
+					vector3d_set (src->begin->pos, *xi, *yj, z1k);
+					vector3d_set (src->begin->dim, *dxi, *dyj, *dzk);
 					for (l = 0; l < m; l++) {
-						cvector_set (obs, *xl, *yl, *zl);
+						vector3d_set (obs, *xl, *yl, *zl);
 						*al = f->function (obs, src, f->parameter);
 						al++;
 						xl++;
@@ -109,14 +109,14 @@ kernel_matrix_set (double *a, const data_array *array, const grid *g, const cvec
 				dyj++;
 			}
 		}
-		cvector_free (obs);
+		vector3d_free (obs);
 		source_free (src);
 	}
 	return;
 }
 
 double *
-kernel_matrix (const data_array *array, const grid *g, const cvector *mgz, const cvector *exf, const mgcal_func *f)
+kernel_matrix (const data_array *array, const grid *g, const vector3d *mgz, const vector3d *exf, const mgcal_func *f)
 {
 	int		m, n;
 	double	*a;

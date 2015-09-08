@@ -42,8 +42,8 @@ example_kernel (const int nx, const int ny, const int nz, const double x[], cons
 	grid		*gobs;
 	grid		*gsrc;
 	mgcal_func	*f;
-	cvector		*exf;
-	cvector		*mgz;
+	vector3d	*exf;
+	vector3d	*mgz;
 	double		*a;
 
 	double		t;
@@ -52,8 +52,8 @@ example_kernel (const int nx, const int ny, const int nz, const double x[], cons
 	array = create_data_array (gobs);
 
 	gsrc = grid_new (nx, ny, nz, x, y, z);
-	exf = cvector_new_with_geodesic_poler (1., inc, dec);
-	mgz = cvector_new_with_geodesic_poler (1., inc, dec);
+	exf = vector3d_new_with_geodesic_poler (1., inc, dec);
+	mgz = vector3d_new_with_geodesic_poler (1., inc, dec);
 	f = mgcal_func_new (total_force_dipole, NULL);
 //	f = mgcal_func_new (total_force_prism, NULL);
 
@@ -65,8 +65,8 @@ example_kernel (const int nx, const int ny, const int nz, const double x[], cons
 	grid_free (gsrc);
 	grid_free (gobs);
 	mgcal_func_free (f);
-	cvector_free (exf);
-	cvector_free (mgz);
+	vector3d_free (exf);
+	vector3d_free (mgz);
 
 	return a;
 }

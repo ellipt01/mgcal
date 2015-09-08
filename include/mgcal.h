@@ -5,11 +5,12 @@
 extern "C" {
 #endif
 
+#include <math.h>
 #include <stdbool.h>
 
 extern double	scale_factor;
 
-#include "cvector.h"
+#include "vector3d.h"
 #include "data_array.h"
 #include "grid.h"
 #include "source.h"

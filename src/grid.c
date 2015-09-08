@@ -1,9 +1,9 @@
 #include <stdlib.h>
 #include <stdbool.h>
 
-#include "cvector.h"
-#include "grid.h"
+#include "../include/vector3d.h"
 #include "private/util.h"
+#include "grid.h"
 
 static grid *
 grid_alloc (void)
@@ -195,7 +195,7 @@ grid_get_index (const grid *g, const int n, int *i, int *j, int *k, int *h)
 }
 
 void
-grid_get_nth (const grid *g, const int n, cvector *center, cvector *dim)
+grid_get_nth (const grid *g, const int n, vector3d *center, vector3d *dim)
 {
 	int		i = 0, j = 0, k = 0, h = 0;
 	if (!g) error_and_exit ("grid_get_nth", "grid *g is empty.", __FILE__, __LINE__);
@@ -203,8 +203,8 @@ grid_get_nth (const grid *g, const int n, cvector *center, cvector *dim)
 	if (center) {
 		double	zk = g->z[k];
 		if (g->z1) zk += g->z1[h];
-		cvector_set (center, g->x[i], g->y[j], zk);
+		vector3d_set (center, g->x[i], g->y[j], zk);
 	}
-	if (dim) cvector_set (dim, g->dx[i], g->dy[j], g->dz[k]);
+	if (dim) vector3d_set (dim, g->dx[i], g->dy[j], g->dz[k]);
 	return;
 }

@@ -7,9 +7,9 @@
 
 #include <stdlib.h>
 
-#include "cvector.h"
-#include "source.h"
+#include "../include/vector3d.h"
 #include "private/util.h"
+#include "source.h"
 
 static source_item *
 source_item_alloc (void)
@@ -49,7 +49,7 @@ source *
 source_new (const double inc, const double dec)
 {
 	source	*src = source_alloc ();
-	src->exf = cvector_new_with_geodesic_poler (1., inc, dec);
+	src->exf = vector3d_new_with_geodesic_poler (1., inc, dec);
 	return src;
 }
 
@@ -58,7 +58,7 @@ source_free (source *src)
 {
 	if (src) {
 		source_item	*cur;
-		cvector_free (src->exf);
+		vector3d_free (src->exf);
 		cur = src->item;
 		while (cur) {
 			source_item	*next = cur->next;
@@ -88,23 +88,23 @@ source_append_item (source *src)
 void
 source_set_position (source *src, const double x, const double y, const double z)
 {
-	if (src->end->pos) cvector_free (src->end->pos);
-	src->end->pos = cvector_new (x, y, z);
+	if (src->end->pos) vector3d_free (src->end->pos);
+	src->end->pos = vector3d_new (x, y, z);
 	return;
 }
 
 void
 source_set_dimension (source *src, const double dx, const double dy, const double dz)
 {
-	if (src->end->dim) cvector_free (src->end->dim);
-	src->end->dim = cvector_new (dx, dy, dz);
+	if (src->end->dim) vector3d_free (src->end->dim);
+	src->end->dim = vector3d_new (dx, dy, dz);
 	return;
 }
 
 void
 source_set_magnetization (source *src, const double mgz, const double inc, const double dec)
 {
-	if (src->end->mgz) cvector_free (src->end->mgz);
-	src->end->mgz = cvector_new_with_geodesic_poler (mgz, inc, dec);
+	if (src->end->mgz) vector3d_free (src->end->mgz);
+	src->end->mgz = vector3d_new_with_geodesic_poler (mgz, inc, dec);
 	return;
 }

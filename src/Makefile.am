@@ -15,7 +15,7 @@ lib_LTLIBRARIES = libmgcal.la
 libmgcal_la_SOURCES = \
 	private/util.c\
 	mgcal.c\
-	cvector.c\
+	vector3d.c\
 	grid.c\
 	data_array.c\
 	source.c\

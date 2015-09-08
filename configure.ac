@@ -2,13 +2,13 @@
 # Process this file with autoconf to produce a configure script.
 
 AC_PREREQ([2.63])
-AC_INIT([mgcal], [0.1])
+AC_INIT([mgcal], [0.1.1])
 AC_CONFIG_SRCDIR([src/mgcal.c])
 AC_CONFIG_HEADERS([config.h])
 
-MGCAL_CURRENT=1
+MGCAL_CURRENT=2
 MGCAL_REVISION=0
-MGCAL_AGE=1
+MGCAL_AGE=2
 MGCAL_LT_VERSION="${MGCAL_CURRENT}:${MGCAL_REVISION}:${MGCAL_AGE}"
 AC_SUBST(MGCAL_LT_VERSION)
 

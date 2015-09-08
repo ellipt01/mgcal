@@ -12,7 +12,7 @@
 #include <math.h>
 #include <float.h>
 
-#include "cvector.h"
+#include "../include/vector3d.h"
 #include "data_array.h"
 #include "grid.h"
 #include "private/util.h"
@@ -351,21 +351,21 @@ fwrite_grid (FILE *stream, const grid *g)
 void
 fwrite_grid_with_data (FILE *stream, const grid *g, const double *data, const char *format)
 {
-	int		n;
-	cvector	*pos;
-	char	fm[BUFSIZ];
+	int			n;
+	vector3d	*pos;
+	char		fm[BUFSIZ];
 
 	if (!g) error_and_exit ("fwrite_grid", "grid is empty.", __FILE__, __LINE__);
 
 	if (!format) strcpy (fm, "%f %f %f %f\n");
 	else sprintf (fm, "%s\n", format);
 
-	pos = cvector_new (0., 0., 0.);
+	pos = vector3d_new (0., 0., 0.);
 	for (n = 0; n < g->n; n++) {
 		double	val = (data) ? data[n] : 0.;
 		grid_get_nth (g, n, pos, NULL);
 		fprintf (stream, fm, pos->x, pos->y, pos->z, val);
 	}
-	cvector_free (pos);
+	vector3d_free (pos);
 	return;
 }
