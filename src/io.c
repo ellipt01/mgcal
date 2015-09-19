@@ -349,6 +349,27 @@ fwrite_grid (FILE *stream, const grid *g)
 }
 
 void
+fwrite_grid_to_xyz (FILE *stream, const grid *g, const char *format)
+{
+	int			n;
+	vector3d	*pos;
+	char		fm[BUFSIZ];
+
+	if (!g) error_and_exit ("fwrite_grid", "grid is empty.", __FILE__, __LINE__);
+
+	if (!format) strcpy (fm, "%f %f %f %f\n");
+	else sprintf (fm, "%s\n", format);
+
+	pos = vector3d_new (0., 0., 0.);
+	for (n = 0; n < g->n; n++) {
+		grid_get_nth (g, n, pos, NULL);
+		fprintf (stream, fm, pos->x, pos->y, pos->z);
+	}
+	vector3d_free (pos);
+	return;
+}
+
+void
 fwrite_grid_with_data (FILE *stream, const grid *g, const double *data, const char *format)
 {
 	int			n;

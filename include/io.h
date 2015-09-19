@@ -17,6 +17,7 @@ void		fwrite_data_array_with_data (FILE *stream, const data_array *array, const 
 void		fwrite_data_array (FILE *stream, const data_array *array, const char *format);
 grid		*fread_grid (FILE *stream);
 void		fwrite_grid (FILE *stream, const grid *g);
+void		fwrite_grid_to_xyz (FILE *stream, const grid *g, const char *format);
 void		fwrite_grid_with_data (FILE *stream, const grid *g, const double *data, const char *format);
 
 #ifdef __cplusplus
