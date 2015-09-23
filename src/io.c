@@ -357,7 +357,7 @@ fwrite_grid_to_xyz (FILE *stream, const grid *g, const char *format)
 
 	if (!g) error_and_exit ("fwrite_grid", "grid is empty.", __FILE__, __LINE__);
 
-	if (!format) strcpy (fm, "%f %f %f %f\n");
+	if (!format) strcpy (fm, "%f %f %f\n");
 	else sprintf (fm, "%s\n", format);
 
 	pos = vector3d_new (0., 0., 0.);
