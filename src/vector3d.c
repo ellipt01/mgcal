@@ -90,7 +90,13 @@ vector3d_axpy (const double alpha, const vector3d *x, vector3d *y)
 }
 
 double
+vector3d_dot (const vector3d *c)
+{
+	return pow (c->x, 2.) + pow (c->y, 2.) + pow (c->z, 2.);
+}
+
+double
 vector3d_nrm (const vector3d *c)
 {
-	return sqrt (pow (c->x, 2.) + pow (c->y, 2.) + pow (c->z, 2.));
+	return sqrt (vector3d_dot (c));
 }
