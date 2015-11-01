@@ -17,11 +17,7 @@
 
 double scale_factor = 1.;
 
-static double
-sign (const double val)
-{
-	return (val >= 0.) ? +1. : -1.;
-}
+#define SIGN(a) ((a) < 0. ? -1. : +1.)
 
 static void
 dipole_kernel (vector3d *f, const double x, const double y, const double z, const vector3d *mgz)
@@ -119,7 +115,9 @@ dipole (const vector3d *obs, const source *s)
 			double	dx = cur->dim->x;
 			double	dy = cur->dim->y;
 			double	dz = cur->dim->z;
-			dv = fabs (dx * dy * dz);
+			double	dd = dx * dy;
+			if (fabs (dz) > DBL_EPSILON) dd *= dz;
+			dv = fabs (dd);
 		}
 		x = cur->pos->x;
 		y = cur->pos->y;
@@ -153,7 +151,7 @@ prism (const vector3d *obs, const source *s)
 
 	cur = s->begin;
 	while (cur) {
-		double	dx, dy, dz, dv;
+		double	dx, dy, dz;
 		double	flag;
 
 		if (!cur->pos) error_and_exit ("prism", "position of source item is empty.", __FILE__, __LINE__);
@@ -163,8 +161,7 @@ prism (const vector3d *obs, const source *s)
 		dx = cur->dim->x;
 		dy = cur->dim->y;
 		dz = cur->dim->z;
-		dv = dx * dy * dz;
-		flag = sign (dv);
+		flag = SIGN (dx) * SIGN (dy) * SIGN (dz);
 
 		x = cur->pos->x;
 		y = cur->pos->y;
@@ -179,13 +176,21 @@ prism (const vector3d *obs, const source *s)
 		c[1] = c[0] + dz;
 
 		prism_kernel (&tmp[0], a[1], b[1], c[1], cur->mgz);
-		prism_kernel (&tmp[1], a[1], b[1], c[0], cur->mgz);
 		prism_kernel (&tmp[2], a[1], b[0], c[1], cur->mgz);
-		prism_kernel (&tmp[3], a[1], b[0], c[0], cur->mgz);
 		prism_kernel (&tmp[4], a[0], b[1], c[1], cur->mgz);
-		prism_kernel (&tmp[5], a[0], b[1], c[0], cur->mgz);
 		prism_kernel (&tmp[6], a[0], b[0], c[1], cur->mgz);
-		prism_kernel (&tmp[7], a[0], b[0], c[0], cur->mgz);
+
+		if (fabs (dz) < DBL_EPSILON) {
+			vector3d_set (&tmp[1], 0., 0., 0.);
+			vector3d_set (&tmp[3], 0., 0., 0.);
+			vector3d_set (&tmp[5], 0., 0., 0.);
+			vector3d_set (&tmp[7], 0., 0., 0.);
+		} else {
+			prism_kernel (&tmp[1], a[1], b[1], c[0], cur->mgz);
+			prism_kernel (&tmp[3], a[1], b[0], c[0], cur->mgz);
+			prism_kernel (&tmp[5], a[0], b[1], c[0], cur->mgz);
+			prism_kernel (&tmp[7], a[0], b[0], c[0], cur->mgz);
+		}
 
 		f->x += flag * (tmp[0].x - tmp[1].x - tmp[2].x + tmp[3].x
 			- tmp[4].x + tmp[5].x + tmp[6].x - tmp[7].x);
@@ -292,7 +297,7 @@ prism_yz (const vector3d *obs, const source *s)
 
 	cur = s->begin;
 	while (cur) {
-		double	dy, dz, ds;
+		double	dy, dz;
 		double	flag;
 
 		if (!cur->pos) error_and_exit ("prism_yz", "position of source item is empty.", __FILE__, __LINE__);
@@ -301,8 +306,7 @@ prism_yz (const vector3d *obs, const source *s)
 
 		dy = cur->dim->y;
 		dz = cur->dim->z;
-		ds = dy * dz;
-		flag = sign (ds);
+		flag = SIGN (dy) * SIGN (dz);
 
 		y = cur->pos->y;
 		z = cur->pos->z;
@@ -314,9 +318,15 @@ prism_yz (const vector3d *obs, const source *s)
 		c[1] = c[0] + dz;
 
 		prism_yz_kernel (&tmp[0], b[1], c[1], cur->mgz);
-		prism_yz_kernel (&tmp[1], b[1], c[0], cur->mgz);
 		prism_yz_kernel (&tmp[2], b[0], c[1], cur->mgz);
-		prism_yz_kernel (&tmp[3], b[0], c[0], cur->mgz);
+
+		if (fabs (dz) < DBL_EPSILON) {
+			vector3d_set (&tmp[1], 0., 0., 0.);
+			vector3d_set (&tmp[3], 0., 0., 0.);
+		} else {
+			prism_yz_kernel (&tmp[1], b[1], c[0], cur->mgz);
+			prism_yz_kernel (&tmp[3], b[0], c[0], cur->mgz);
+		}
 
 		f->x += flag * (tmp[0].x - tmp[1].x - tmp[2].x + tmp[3].x);
 
