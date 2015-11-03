@@ -40,7 +40,7 @@ void		vector3d_free (vector3d *cv);
 void		vector3d_scale (vector3d *x, const double alpha);
 vector3d	*vector3d_copy (const vector3d *src);
 void		vector3d_axpy (const double alpha, const vector3d *x, vector3d *y);
-double		vector3d_dot (const vector3d *c);
+double		vector3d_dot (const vector3d *x, const vector3d *y);
 double		vector3d_nrm (const vector3d *c);
 
 #ifdef __cplusplus
