@@ -13,6 +13,7 @@ extern double	scale_factor;
 #include "vector3d.h"
 #include "data_array.h"
 #include "grid.h"
+#include "scattered.h"
 #include "source.h"
 #include "calc.h"
 #include "io.h"

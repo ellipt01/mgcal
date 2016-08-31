@@ -128,9 +128,9 @@ grid *
 grid_new_full (const int nx, const int ny, const int nz, const double x[], const double y[], const double z[], const double *dx, const double *dy, const double *dz, const double *z1)
 {
 	grid	*g;
-	if (nx <= 0 || ny <= 0 || nz <= 0) error_and_exit ("grid_new", "nx, ny, nz must be >= 1.", __FILE__, __LINE__);
+	if (nx <= 0 || ny <= 0 || nz <= 0) error_and_exit ("grid_new_full", "nx, ny, nz must be >= 1.", __FILE__, __LINE__);
 	g = grid_new_0 (nx, ny, nz, x, y, z, dx, dy, dz, z1);
-	if (!g) error_and_exit ("grid_new", "failed to create grid object.", __FILE__, __LINE__);
+	if (!g) error_and_exit ("grid_new_full", "failed to create grid object.", __FILE__, __LINE__);
 	return g;
 }
 
