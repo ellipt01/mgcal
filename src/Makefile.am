@@ -17,6 +17,7 @@ libmgcal_la_SOURCES = \
 	mgcal.c\
 	vector3d.c\
 	grid.c\
+	scattered.c\
 	data_array.c\
 	source.c\
 	calc.c\
