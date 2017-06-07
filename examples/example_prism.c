@@ -32,7 +32,7 @@ example_prism (FILE *stream, const int nx, const int ny, const int nz, const dou
 	g = grid_new (nx, ny, nz, x, y, z);
 	s = source_new (inc, dec);
 	source_append_item (s);
-	source_set_position (s, 0., 0., -2.);
+	source_set_position (s, 0., 0., 2.);
 	source_set_dimension (s, 5., 5., 2.);
 	source_set_magnetization (s, 0.25 * mgz_int, inc, dec);
 

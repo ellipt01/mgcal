@@ -34,8 +34,8 @@ typedef enum {
 
 vector3d	*vector3d_new (const double x, const double y, const double z);
 vector3d	*vector3d_new_with_geodesic_poler (const double r, const double inc, const double dec);
-void		vector3d_set (vector3d *cv, const double x, const double y, const double z);
-void		vector3d_free (vector3d *cv);
+void		vector3d_set (vector3d *v, const double x, const double y, const double z);
+void		vector3d_free (vector3d *v);
 
 void		vector3d_scale (vector3d *x, const double alpha);
 vector3d	*vector3d_copy (const vector3d *src);

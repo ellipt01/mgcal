@@ -20,68 +20,79 @@ double scale_factor = 1.;
 #define SIGN(a) ((a) < 0. ? -1. : +1.)
 
 static void
-dipole_kernel (vector3d *f, const double x, const double y, const double z, const vector3d *mgz)
+transform (const double x1, const double y1, const double z1, double *x, double *y, double *z)
 {
-	double	fx, fy, fz;
-
-	double	r  = sqrt (x * x + y * y + z * z);
-	double	r3 = pow (r, 3.);
-	double	r5 = pow (r, 5.);
-
-	double	jx = mgz->x;
-	double	jy = mgz->y;
-	double	jz = mgz->z;
-
-	fx =
-		- jx * (1.0 / r3 - 3. * pow (x, 2.) / r5)
-		+ jy * (3.0 * x * y / r5)
-		+ jz * (3.0 * x * z / r5);
-
-	fy =
-		+ jx * (3.0 * y * x / r5)
-		- jy * (1.0 / r3 - 3. * pow (y, 2.) / r5)
-		+ jz * (3.0 * y * z / r5);
-
-	fz =
-		+ jx * (3.0 * z * x / r5)
-		+ jy * (3.0 * z * y / r5)
-		- jz * (1.0 / r3 - 3. * pow (z, 2.) / r5);
-
-	vector3d_set (f, fx, fy, fz);
+	if (x) *x = y1;
+	if (y) *y = x1;
+	if (z) *z = -z1;
 	return;
 }
 
 static void
-prism_kernel (vector3d *f, const double x, const double y, const double z, const vector3d *mgz)
+dipole_kernel (vector3d *f, const double x1, const double y1, const double z1, const vector3d *mgz)
 {
+	double	x, y, z;
+	double	jx, jy, jz;
+
 	double	fx, fy, fz;
-	double	lnx, lny, lnz;
+	double	r, r3, r5;
 
-	double	r = sqrt (x * x + y * y + z * z);
+	transform (x1, y1, z1, &x, &y, &z);
+	transform (mgz->x, mgz->y, mgz->z, &jx, &jy, &jz);
 
+	r  = sqrt (x * x + y * y + z * z);
+	r3 = pow (r, 3.);
+	r5 = pow (r, 5.);
+
+	fx =
+		- jx * (1. / r3 - 3. * pow (x, 2.) / r5)
+		+ jy * (3. * x * y / r5)
+		+ jz * (3. * x * z / r5);
+
+	fy =
+		+ jx * (3. * y * x / r5)
+		- jy * (1. / r3 - 3. * pow (y, 2.) / r5)
+		+ jz * (3. * y * z / r5);
+
+	fz =
+		+ jx * (3. * z * x / r5)
+		+ jy * (3. * z * y / r5)
+		- jz * (1. / r3 - 3. * pow (z, 2.) / r5);
+
+	vector3d_set (f, fy, fx, - fz);
+	return;
+}
+
+static void
+prism_kernel (vector3d *f, const double x1, const double y1, const double z1, const vector3d *mgz)
+{
+	double	x, y, z;
+	double	jx, jy, jz;
+
+	double	fx, fy, fz;
+	double	r, lnx, lny, lnz;
+
+	transform (x1, y1, z1, &x, &y, &z);
+	transform (mgz->x, mgz->y, mgz->z, &jx, &jy, &jz);
+
+	r = sqrt (x * x + y * y + z * z);
 	lnx = (fabs (r + x) > DBL_EPSILON) ? log (r + x) : - log (r - x);
 	lny = (fabs (r + y) > DBL_EPSILON) ? log (r + y) : - log (r - y);
 	lnz = (fabs (r + z) > DBL_EPSILON) ? log (r + z) : - log (r - z);
 
-	{
-		double	jx = mgz->x;
-		double	jy = mgz->y;
-		double	jz = mgz->z;
+	fx = - jx * atan2 (y * z, x * r)
+		+ jy * lnz
+		+ jz * lny;
 
-		fx = - jx * atan2 (y * z, x * r)
-			+ jy * lnz
-			+ jz * lny;
+	fy = jx * lnz
+		- jy * atan2 (x * z, y * r)
+		+ jz * lnx;
 
-		fy = jx * lnz
-			- jy * atan2 (x * z, y * r)
-			+ jz * lnx;
+	fz = jx * lny
+		+ jy * lnx
+		- jz * atan2 (x * y, z * r);
 
-		fz = jx * lny
-			+ jy * lnx
-			- jz * atan2 (x * y, z * r);
-	}
-
-	vector3d_set (f, fx, fy, fz);
+	vector3d_set (f, fy, fx, - fz);
 	return;
 }
 
@@ -90,8 +101,8 @@ dipole (const vector3d *obs, const source *s)
 {
 	double		x, y, z;
 	double		x0, y0, z0;
-	vector3d		*f;
-	vector3d		tmp;
+	vector3d	*f;
+	vector3d	tmp;
 	source_item	*cur;
 
 	if (!obs) error_and_exit ("dipole", "vector3d *obs is empty.", __FILE__, __LINE__);
@@ -110,7 +121,7 @@ dipole (const vector3d *obs, const source *s)
 		if (!cur->pos) error_and_exit ("dipole", "position of source item is empty.", __FILE__, __LINE__);
 		if (!cur->mgz) error_and_exit ("dipole", "magnetization of source item is empty.", __FILE__, __LINE__);
 
-		dv = 1.0;
+		dv = 1.;
 		if (cur->dim) {
 			double	dx = cur->dim->x;
 			double	dy = cur->dim->y;
@@ -136,8 +147,8 @@ prism (const vector3d *obs, const source *s)
 	double		a[2], b[2], c[2];
 	double		x, y, z;
 	double		x0, y0, z0;
-	vector3d		*f;
-	vector3d		tmp[8];
+	vector3d	*f;
+	vector3d	tmp[8];
 	source_item	*cur;
 
 	if (!obs) error_and_exit ("prism", "vector3d *obs is empty.", __FILE__, __LINE__);
@@ -175,10 +186,10 @@ prism (const vector3d *obs, const source *s)
 		b[1] = b[0] + dy;
 		c[1] = c[0] + dz;
 
-		prism_kernel (&tmp[0], a[1], b[1], c[1], cur->mgz);
-		prism_kernel (&tmp[2], a[1], b[0], c[1], cur->mgz);
-		prism_kernel (&tmp[4], a[0], b[1], c[1], cur->mgz);
-		prism_kernel (&tmp[6], a[0], b[0], c[1], cur->mgz);
+		prism_kernel (&tmp[0], a[1], b[1], c[0], cur->mgz);
+		prism_kernel (&tmp[2], a[1], b[0], c[0], cur->mgz);
+		prism_kernel (&tmp[4], a[0], b[1], c[0], cur->mgz);
+		prism_kernel (&tmp[6], a[0], b[0], c[0], cur->mgz);
 
 		if (fabs (dz) < DBL_EPSILON) {
 			vector3d_set (&tmp[1], 0., 0., 0.);
@@ -186,10 +197,10 @@ prism (const vector3d *obs, const source *s)
 			vector3d_set (&tmp[5], 0., 0., 0.);
 			vector3d_set (&tmp[7], 0., 0., 0.);
 		} else {
-			prism_kernel (&tmp[1], a[1], b[1], c[0], cur->mgz);
-			prism_kernel (&tmp[3], a[1], b[0], c[0], cur->mgz);
-			prism_kernel (&tmp[5], a[0], b[1], c[0], cur->mgz);
-			prism_kernel (&tmp[7], a[0], b[0], c[0], cur->mgz);
+			prism_kernel (&tmp[1], a[1], b[1], c[1], cur->mgz);
+			prism_kernel (&tmp[3], a[1], b[0], c[1], cur->mgz);
+			prism_kernel (&tmp[5], a[0], b[1], c[1], cur->mgz);
+			prism_kernel (&tmp[7], a[0], b[0], c[1], cur->mgz);
 		}
 
 		f->x += flag * (tmp[0].x - tmp[1].x - tmp[2].x + tmp[3].x
@@ -208,50 +219,58 @@ prism (const vector3d *obs, const source *s)
 }
 
 static void
-dipole_yz_kernel (vector3d *f, const double y, const double z, const vector3d *mgz)
+dipole_xz_kernel (vector3d *f, const double x1, const double z1, const vector3d *mgz)
 {
+	double	y, z;
+	double	jy, jz;
+
 	double	fy, fz;
+	double	r2, r4;
 
-	double	jy = mgz->y;
-	double	jz = mgz->z;
+	transform (x1, 0., z1, NULL, &y, &z);
+	transform (mgz->x, 0., mgz->z, NULL, &jy, &jz);
 
-	double	r2 = y * y + z * z;
-	double	r4 = pow (r2, 2.);
+	r2 = y * y + z * z;
+	r4 = pow (r2, 2.);
 
 	fy = jy * (1. / r2 - 2. * pow (y, 2.) / r4) - jz * 2. * y * z / r4;
 	fz = - jy * 2. * y * z / r4 + jz * (1. / r2 - 2. * pow (z, 2.) / r4);
 
-	vector3d_set (f, 0., - 2. * fy, - 2. * fz);
+	vector3d_set (f, - 2. * fy, 0., 2. * fz);
 	return;
 }
 
 static void
-prism_yz_kernel (vector3d *f, const double y, const double z, const vector3d *mgz)
+prism_xz_kernel (vector3d *f, const double x1, const double z1, const vector3d *mgz)
 {
+	double	y, z;
+	double	jy, jz;
+
 	double	fy, fz;
+	double	r;
 
-	double	jy = mgz->y;
-	double	jz = mgz->z;
+	transform (x1, 0., z1, NULL, &y, &z);
+	transform (mgz->x, 0., mgz->z, NULL, &jy, &jz);
 
-	double	r = sqrt (y * y + z * z);
+	r = sqrt (y * y + z * z);
 
 	fy = jy * atan (z / y) + jz * log (r);
 	fz = jy * log (r) + jz * atan (y / z);
 
-	vector3d_set (f, 0., - 2. * fy, - 2. * fz);
+	vector3d_set (f, - 2. * fy, 0., 2. * fz);
 	return;
 }
 
 vector3d *
-dipole_yz (const vector3d *obs, const source *s)
+dipole_xz (const vector3d *obs, const source *s)
 {
-	double		y, z;
-	double		y0, z0;
-	vector3d		*f;
-	vector3d		tmp;
+	double		x, z;
+	double		x0, z0;
+	vector3d	*f;
+	vector3d	tmp;
 	source_item	*cur;
 
-	y0 = obs->y;
+	x0 = obs->x;
 	z0 = obs->z;
 
 	f = vector3d_new (0., 0., 0.);
@@ -260,19 +279,19 @@ dipole_yz (const vector3d *obs, const source *s)
 	while (cur) {
 		double	ds;
 
-		if (!cur->pos) error_and_exit ("dipole_yz", "position of source item is empty.", __FILE__, __LINE__);
-		if (!cur->mgz) error_and_exit ("dipole_yz", "magnetization of source item is empty.", __FILE__, __LINE__);
+		if (!cur->pos) error_and_exit ("dipole_xz", "position of source item is empty.", __FILE__, __LINE__);
+		if (!cur->mgz) error_and_exit ("dipole_xz", "magnetization of source item is empty.", __FILE__, __LINE__);
 
 		ds = 1.0;
 		if (cur->dim) {
-			double	dy = cur->dim->y;
+			double	dx = cur->dim->x;
 			double	dz = cur->dim->z;
-			ds = fabs (dy * dz);
+			ds = fabs (dx * dz);
 		}
-		y = cur->pos->y - y0;
+		x = cur->pos->x - x0;
 		z = cur->pos->z - z0;
 
-		dipole_yz_kernel (&tmp, y, z, cur->mgz);
+		dipole_xz_kernel (&tmp, x, z, cur->mgz);
 		vector3d_axpy (ds, &tmp, f);
 		cur = cur->next;
 	}
@@ -281,57 +300,54 @@ dipole_yz (const vector3d *obs, const source *s)
 }
 
 vector3d *
-prism_yz (const vector3d *obs, const source *s)
+prism_xz (const vector3d *obs, const source *s)
 {
 	double		b[2], c[2];
-	double		y, z;
-	double		y0, z0;
-	vector3d		*f;
-	vector3d		tmp[4];
+	double		x, z;
+	double		x0, z0;
+	vector3d	*f;
+	vector3d	tmp[4];
 	source_item	*cur;
 
-	y0 = obs->y;
+	x0 = obs->x;
 	z0 = obs->z;
 
 	f = vector3d_new (0., 0., 0.);
 
 	cur = s->begin;
 	while (cur) {
-		double	dy, dz;
+		double	dx, dz;
 		double	flag;
 
-		if (!cur->pos) error_and_exit ("prism_yz", "position of source item is empty.", __FILE__, __LINE__);
-		if (!cur->dim) error_and_exit ("prism_yz", "dimension of source item is empty.", __FILE__, __LINE__);
-		if (!cur->mgz) error_and_exit ("prism_yz", "magnetization of source item is empty.", __FILE__, __LINE__);
+		if (!cur->pos) error_and_exit ("prism_xz", "position of source item is empty.", __FILE__, __LINE__);
+		if (!cur->dim) error_and_exit ("prism_xz", "dimension of source item is empty.", __FILE__, __LINE__);
+		if (!cur->mgz) error_and_exit ("prism_xz", "magnetization of source item is empty.", __FILE__, __LINE__);
 
-		dy = cur->dim->y;
+		dx = cur->dim->x;
 		dz = cur->dim->z;
-		flag = SIGN (dy) * SIGN (dz);
+		flag = SIGN (dx) * SIGN (dz);
 
-		y = cur->pos->y;
+		x = cur->pos->x;
 		z = cur->pos->z;
 
-		b[0] = y - 0.5 * dy - y0;
+		b[0] = x - 0.5 * dx - x0;
 		c[0] = z - 0.5 * dz - z0;
 
-		b[1] = b[0] + dy;
+		b[1] = b[0] + dx;
 		c[1] = c[0] + dz;
 
-		prism_yz_kernel (&tmp[0], b[1], c[1], cur->mgz);
-		prism_yz_kernel (&tmp[2], b[0], c[1], cur->mgz);
+		prism_xz_kernel (&tmp[0], b[1], c[0], cur->mgz);
+		prism_xz_kernel (&tmp[2], b[0], c[0], cur->mgz);
 
 		if (fabs (dz) < DBL_EPSILON) {
 			vector3d_set (&tmp[1], 0., 0., 0.);
 			vector3d_set (&tmp[3], 0., 0., 0.);
 		} else {
-			prism_yz_kernel (&tmp[1], b[1], c[0], cur->mgz);
-			prism_yz_kernel (&tmp[3], b[0], c[0], cur->mgz);
+			prism_xz_kernel (&tmp[1], b[1], c[1], cur->mgz);
+			prism_xz_kernel (&tmp[3], b[0], c[1], cur->mgz);
 		}
 
 		f->x += flag * (tmp[0].x - tmp[1].x - tmp[2].x + tmp[3].x);
-
-		f->y += flag * (tmp[0].y - tmp[1].y - tmp[2].y + tmp[3].y);
-
 		f->z += flag * (tmp[0].z - tmp[1].z - tmp[2].z + tmp[3].z);
 
 		cur = cur->next;
@@ -360,22 +376,24 @@ calc_component (const vector3d *f, const source *src, MgcalComponent comp)
 {
 	double	val = 0.;
 	switch (comp) {
-	case MGCAL_X_COMPONENT:
-		val = f->x;
-		break;
+		case MGCAL_X_COMPONENT:
+			val = f->x;
+			break;
 
-	case MGCAL_Y_COMPONENT:
-		val = f->y;
-		break;
+		case MGCAL_Y_COMPONENT:
+			val = f->y;
+			break;
 
-	case MGCAL_Z_COMPONENT:
-		val = f->z;
-		break;
+		case MGCAL_Z_COMPONENT:
+			val = f->z;
+			break;
 
-	case MGCAL_TOTAL_FORCE:
-		val = total_force (src->exf, f);
-		break;
+		case MGCAL_TOTAL_FORCE:
+			val = total_force (src->exf, f);
+			break;
 
+		default:
+			break;
 	}
 	return val;
 }
@@ -450,56 +468,56 @@ total_force_prism (const vector3d *obs, const source *src, void *data)
 
 /*** dipole yz ***/
 static double
-component_dipole_yz (const vector3d *obs, const source *src, MgcalComponent comp)
+component_dipole_xz (const vector3d *obs, const source *src, MgcalComponent comp)
 {
-	vector3d	*f = dipole_yz (obs, src);
+	vector3d	*f = dipole_xz (obs, src);
 	double	val = calc_component (f, src, comp);
 	vector3d_free (f);
 	return val;
 }
 
 double
-y_component_dipole_yz (const vector3d *obs, const source *src, void *data)
+x_component_dipole_xz (const vector3d *obs, const source *src, void *data)
 {
-	return component_dipole_yz (obs, src, MGCAL_Y_COMPONENT);
+	return component_dipole_xz (obs, src, MGCAL_X_COMPONENT);
 }
 
 double
-z_component_dipole_yz (const vector3d *obs, const source *src, void *data)
+z_component_dipole_xz (const vector3d *obs, const source *src, void *data)
 {
-	return component_dipole_yz (obs, src, MGCAL_Z_COMPONENT);
+	return component_dipole_xz (obs, src, MGCAL_Z_COMPONENT);
 }
 
 double
-total_force_dipole_yz (const vector3d *obs, const source *src, void *data)
+total_force_dipole_xz (const vector3d *obs, const source *src, void *data)
 {
-	return component_dipole_yz (obs, src, MGCAL_TOTAL_FORCE);
+	return component_dipole_xz (obs, src, MGCAL_TOTAL_FORCE);
 }
 
 /*** prism yz ***/
 static double
-component_prism_yz (const vector3d *obs, const source *src, MgcalComponent comp)
+component_prism_xz (const vector3d *obs, const source *src, MgcalComponent comp)
 {
-	vector3d	*f = prism_yz (obs, src);
+	vector3d	*f = prism_xz (obs, src);
 	double	val = calc_component (f, src, comp);
 	vector3d_free (f);
 	return val;
 }
 
 double
-y_component_prism_yz (const vector3d *obs, const source *src, void *data)
+x_component_prism_xz (const vector3d *obs, const source *src, void *data)
 {
-	return component_prism_yz (obs, src, MGCAL_Y_COMPONENT);
+	return component_prism_xz (obs, src, MGCAL_X_COMPONENT);
 }
 
 double
-z_component_prism_yz (const vector3d *obs, const source *src, void *data)
+z_component_prism_xz (const vector3d *obs, const source *src, void *data)
 {
-	return component_prism_yz (obs, src, MGCAL_Z_COMPONENT);
+	return component_prism_xz (obs, src, MGCAL_Z_COMPONENT);
 }
 
 double
-total_force_prism_yz (const vector3d *obs, const source *src, void *data)
+total_force_prism_xz (const vector3d *obs, const source *src, void *data)
 {
-	return component_prism_yz (obs, src, MGCAL_TOTAL_FORCE);
+	return component_prism_xz (obs, src, MGCAL_TOTAL_FORCE);
 }

@@ -32,7 +32,7 @@ example_dipole (FILE *stream, const int nx, const int ny, const int nz, const do
 	g = grid_new (nx, ny, nz, x, y, z);
 	s = source_new (inc, dec);
 	source_append_item (s);
-	source_set_position (s, 0., 0., -2.);
+	source_set_position (s, 0., 0., 2.);
 	source_set_magnetization (s, 5. * mgz_int, inc, dec);
 
 	f = mgcal_func_new (total_force_dipole, NULL);
@@ -76,7 +76,7 @@ irregular_surface (const int nx, const int ny, const double x[], const double y[
 		double	yj = y[0] + dy * (double) j;
 		for (i = 0; i < nx; i++) {
 			double	xi = x[0] + dx * (double) i;
-			z1[k++] = 1. / sqrt (pow (2. * xi, 2.) + pow (yj, 2.) + 4.);
+			z1[k++] = - 1. / sqrt (pow (2. * xi, 2.) + pow (yj, 2.) + 4.);
 		}
 	}
 	return z1;
@@ -98,7 +98,7 @@ example_dipole_irregular_surface (FILE *stream, const int nx, const int ny, cons
 	free (z1);
 	s = source_new (inc, dec);
 	source_append_item (s);
-	source_set_position (s, 0., 0., -2.);
+	source_set_position (s, 0., 0., 2.);
 	source_set_magnetization (s, 5. * mgz_int, inc, dec);
 
 	f = mgcal_func_new (total_force_dipole, NULL);
@@ -143,15 +143,15 @@ example_dipole_multi_sources (FILE *stream, const int nx, const int ny, const in
 	g = grid_new (nx, ny, nz, x, y, z);
 	s = source_new (inc, dec);
 	source_append_item (s);
-	source_set_position (s, 0., 0., -1.);
+	source_set_position (s, 0., 0., 1.);
 	source_set_magnetization (s, 10., inc, dec);
 
 	source_append_item (s);
-	source_set_position (s, -2., -2., -1.5);
+	source_set_position (s, -2., -2., 1.5);
 	source_set_magnetization (s, 15., inc, dec);
 
 	source_append_item (s);
-	source_set_position (s, 2., 4., -2.);
+	source_set_position (s, 2., 4., 2.);
 	source_set_magnetization (s, 25., inc, dec);
 
 	f = mgcal_func_new (total_force_dipole, NULL);

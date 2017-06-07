@@ -28,8 +28,8 @@ const int		ny = 50;
 const int		nz = 25;
 const double	x[] = {-10., 10.};
 const double	y[] = {-10., 10.};
-const double	z[] = {0., -10.};
-const double	zobs = 0.1;
+const double	z[] = {  0., 10.};
+const double	zobs = - 0.1;
 
 int
 main (void)

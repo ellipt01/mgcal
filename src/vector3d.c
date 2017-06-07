@@ -14,49 +14,49 @@
 static vector3d *
 vector3d_alloc (void)
 {
-	vector3d	*cv = (vector3d *) malloc (sizeof (vector3d));
-	cv->x = 0.;
-	cv->y = 0.;
-	cv->z = 0.;
-	return cv;
+	vector3d	*v = (vector3d *) malloc (sizeof (vector3d));
+	v->x = 0.;
+	v->y = 0.;
+	v->z = 0.;
+	return v;
 }
 
 vector3d *
 vector3d_new (const double x, const double y, const double z)
 {
-	vector3d	*cv = vector3d_alloc ();
-	cv->x = x;
-	cv->y = y;
-	cv->z = z;
-	return cv;
+	vector3d	*v = vector3d_alloc ();
+	v->x = x;
+	v->y = y;
+	v->z = z;
+	return v;
 }
 
 vector3d *
 vector3d_new_with_geodesic_poler (const double r, const double inc, const double dec)
 {
-	vector3d	*cv = vector3d_alloc ();
+	vector3d	*v = vector3d_alloc ();
 	double	t = deg2rad(inc);
 	double	p = deg2rad (dec);
-	cv->x = r * cos (t) * sin (p);
-	cv->y = r * cos (t) * cos (p);
-	cv->z = - r * sin (t);
-	return cv;
+	v->x = r * cos (t) * cos (p);
+	v->y = r * cos (t) * sin (p);
+	v->z = r * sin (t);
+	return v;
 }
 
 void
-vector3d_set (vector3d *cv, const double x, const double y, const double z)
+vector3d_set (vector3d *v, const double x, const double y, const double z)
 {
-	if (!cv) error_and_exit ("vector3d_set", "vector3d *cv is empty.", __FILE__, __LINE__);
-	cv->x = x;
-	cv->y = y;
-	cv->z = z;
+	if (!v) error_and_exit ("vector3d_set", "vector3d *v is empty.", __FILE__, __LINE__);
+	v->x = x;
+	v->y = y;
+	v->z = z;
 	return;
 }
 
 void
-vector3d_free (vector3d *cv)
+vector3d_free (vector3d *v)
 {
-	if (cv) free (cv);
+	if (v) free (v);
 	return;
 }
 

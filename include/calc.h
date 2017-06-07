@@ -15,8 +15,8 @@ extern "C" {
 vector3d	*dipole (const vector3d *obs, const source *s);
 vector3d	*prism (const vector3d *obs, const source *s);
 
-vector3d	*dipole_yz (const vector3d *obs, const source *s);
-vector3d	*prism_yz (const vector3d *obs, const source *s);
+vector3d	*dipole_xz (const vector3d *obs, const source *s);
+vector3d	*prism_xz (const vector3d *obs, const source *s);
 
 double		total_force (const vector3d *exf, const vector3d *f);
 
@@ -30,13 +30,13 @@ double		y_component_prism (const vector3d *obs, const source *src, void *data);
 double		z_component_prism (const vector3d *obs, const source *src, void *data);
 double		total_force_prism (const vector3d *obs, const source *src, void *data);
 
-double		y_component_dipole_yz (const vector3d *obs, const source *src, void *data);
-double		z_component_dipole_yz (const vector3d *obs, const source *src, void *data);
-double		total_force_dipole_yz (const vector3d *obs, const source *src, void *data);
+double		x_component_dipole_xz (const vector3d *obs, const source *src, void *data);
+double		z_component_dipole_xz (const vector3d *obs, const source *src, void *data);
+double		total_force_dipole_xz (const vector3d *obs, const source *src, void *data);
 
-double		y_component_prism_yz (const vector3d *obs, const source *src, void *data);
-double		z_component_prism_yz (const vector3d *obs, const source *src, void *data);
-double		total_force_prism_yz (const vector3d *obs, const source *src, void *data);
+double		x_component_prism_xz (const vector3d *obs, const source *src, void *data);
+double		z_component_prism_xz (const vector3d *obs, const source *src, void *data);
+double		total_force_prism_xz (const vector3d *obs, const source *src, void *data);
 
 #ifdef __cplusplus
 }
