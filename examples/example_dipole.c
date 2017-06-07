@@ -30,10 +30,10 @@ example_dipole (FILE *stream, const int nx, const int ny, const int nz, const do
 	double		t;
 
 	g = grid_new (nx, ny, nz, x, y, z);
-	s = source_new (dec, inc);
+	s = source_new (inc, dec);
 	source_append_item (s);
 	source_set_position (s, 0., 0., -2.);
-	source_set_magnetization (s, 5. * mgz_int, dec, inc);
+	source_set_magnetization (s, 5. * mgz_int, inc, dec);
 
 	f = mgcal_func_new (total_force_dipole, NULL);
 	a = (double *) malloc (g->n * sizeof (double));
@@ -96,10 +96,10 @@ example_dipole_irregular_surface (FILE *stream, const int nx, const int ny, cons
 	z1 = irregular_surface (nx, ny, x, y);
 	g = grid_new_full (nx, ny, nz, x, y, z, NULL, NULL, NULL, z1);
 	free (z1);
-	s = source_new (dec, inc);
+	s = source_new (inc, dec);
 	source_append_item (s);
 	source_set_position (s, 0., 0., -2.);
-	source_set_magnetization (s, 5. * mgz_int, dec, inc);
+	source_set_magnetization (s, 5. * mgz_int, inc, dec);
 
 	f = mgcal_func_new (total_force_dipole, NULL);
 	a = (double *) malloc (g->n * sizeof (double));
@@ -141,18 +141,18 @@ example_dipole_multi_sources (FILE *stream, const int nx, const int ny, const in
 	double		t;
 
 	g = grid_new (nx, ny, nz, x, y, z);
-	s = source_new (dec, inc);
+	s = source_new (inc, dec);
 	source_append_item (s);
 	source_set_position (s, 0., 0., -1.);
-	source_set_magnetization (s, 10., dec, inc);
+	source_set_magnetization (s, 10., inc, dec);
 
 	source_append_item (s);
 	source_set_position (s, -2., -2., -1.5);
-	source_set_magnetization (s, 15., dec, inc);
+	source_set_magnetization (s, 15., inc, dec);
 
 	source_append_item (s);
 	source_set_position (s, 2., 4., -2.);
-	source_set_magnetization (s, 25., dec, inc);
+	source_set_magnetization (s, 25., inc, dec);
 
 	f = mgcal_func_new (total_force_dipole, NULL);
 	a = (double *) malloc (g->n * sizeof (double));

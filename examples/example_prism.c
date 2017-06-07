@@ -30,11 +30,11 @@ example_prism (FILE *stream, const int nx, const int ny, const int nz, const dou
 	double		t;
 
 	g = grid_new (nx, ny, nz, x, y, z);
-	s = source_new (dec, inc);
+	s = source_new (inc, dec);
 	source_append_item (s);
 	source_set_position (s, 0., 0., -2.);
 	source_set_dimension (s, 5., 5., 2.);
-	source_set_magnetization (s, 0.25 * mgz_int, dec, inc);
+	source_set_magnetization (s, 0.25 * mgz_int, inc, dec);
 
 	f = mgcal_func_new (total_force_prism, NULL);
 	a = (double *) malloc (g->n * sizeof (double));

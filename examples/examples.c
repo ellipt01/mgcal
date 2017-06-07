@@ -20,8 +20,8 @@
 #include "examples.h"
 
 const double	mgz_int = 10.0;
-const double	dec = 50.0;
-const double	inc = -7.0;
+const double	inc = 50.0;
+const double	dec = -7.0;
 
 const int		nx = 50;
 const int		ny = 50;
