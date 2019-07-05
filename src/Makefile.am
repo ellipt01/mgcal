@@ -21,6 +21,7 @@ libmgcal_la_SOURCES = \
 	data_array.c\
 	source.c\
 	calc.c\
+	calc_bhattacharyya.c\
 	kernel.c\
 	io.c
 

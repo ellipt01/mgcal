@@ -38,6 +38,9 @@ double		y_component_prism_yz (const vector3d *obs, const source *src, void *data
 double		z_component_prism_yz (const vector3d *obs, const source *src, void *data);
 double		total_force_prism_yz (const vector3d *obs, const source *src, void *data);
 
+double		total_force_dipole_bh (const vector3d *obs, const source *src, void *data);
+double		total_force_prism_bh (const vector3d *obs, const source *src, void *data);
+
 #ifdef __cplusplus
 }
 #endif
