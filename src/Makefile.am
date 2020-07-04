@@ -23,6 +23,7 @@ libmgcal_la_SOURCES = \
 	calc.c\
 	calc_bhattacharyya.c\
 	kernel.c\
+	mapped.c\
 	io.c
 
 # Compiler options. Here we are adding the include directory

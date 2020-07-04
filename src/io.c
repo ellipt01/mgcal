@@ -112,7 +112,7 @@ fread_data_array (FILE *stream)
 void
 fwrite_data_array_with_data (FILE *stream, const data_array *array, const double *data, const char *format)
 {
-	int		i;
+	size_t	i;
 	char	fm[BUFSIZ];
 	if (!format) strcpy (fm, "%f %f %f %f\n");
 	else sprintf (fm, "%s\n", format);
@@ -130,7 +130,7 @@ fwrite_data_array (FILE *stream, const data_array *array, const char *format)
 static void
 fprintf_array (FILE *stream, const int noneline, const int n, const double *array, const char *format)
 {
-	int		i;
+	size_t	i;
 	for (i = 0; i < n; i++) {
 		fprintf (stream, format, array[i]);
 		if (i < n - 1) {
@@ -197,7 +197,7 @@ get_valid_line_body (FILE *stream)
 static int
 read_one_line (char *buf, double *x)
 {
-	int		i;
+	size_t	i;
 	char	*p;
 	if (!buf) return 0;
 	for (i = 0, p = strtok (buf, " \t"); p; p = strtok (NULL, " \t")) {
@@ -211,7 +211,7 @@ const char *valname[] = {"x", "dx", "y", "dy", "z", "dz"};
 grid *
 fread_grid (FILE *stream)
 {
-	int		i, k;
+	size_t	i, k;
 	char	*p;
 	grid	*g;
 
@@ -351,7 +351,7 @@ fwrite_grid (FILE *stream, const grid *g)
 void
 fwrite_grid_to_xyz (FILE *stream, const grid *g, const char *format)
 {
-	int			n;
+	size_t		n;
 	vector3d	*pos;
 	char		fm[BUFSIZ];
 
@@ -372,7 +372,7 @@ fwrite_grid_to_xyz (FILE *stream, const grid *g, const char *format)
 void
 fwrite_grid_with_data (FILE *stream, const grid *g, const double *data, const char *format)
 {
-	int			n;
+	size_t		n;
 	vector3d	*pos;
 	char		fm[BUFSIZ];
 

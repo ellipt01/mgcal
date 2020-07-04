@@ -18,6 +18,7 @@ extern double	scale_factor;
 #include "calc.h"
 #include "io.h"
 #include "kernel.h"
+#include "mapped.h"
 #include "io.h"
 
 void	mgcal_set_scale_factor (const double val);

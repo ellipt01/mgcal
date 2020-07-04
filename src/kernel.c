@@ -66,7 +66,7 @@ kernel_matrix_set (double *a, const data_array *array, const grid *g, const vect
 
 #pragma omp parallel
 	{
-		int			i, j, k, l;
+		size_t		i, j, k, l;
 		double		*z1 = NULL;
 		vector3d	*obs = vector3d_new (0., 0., 0.);
 		source		*src = source_new (0., 0.);
@@ -78,16 +78,20 @@ kernel_matrix_set (double *a, const data_array *array, const grid *g, const vect
 
 #pragma omp for
 		for (k = 0; k < nz; k++) {
-			double	*zk = g->z + k;	// for parallel calculation
-			double	*dzk = g->dz + k;	// for parallel calculation
-			double	*yj = g->y;
-			double	*dyj = g->dy;
+			double			*zk = g->z + k;	// for parallel calculation
+			double			*dzk = g->dz + k;	// for parallel calculation
+			double			*yj = g->y;
+			double			*dyj = g->dy;
+			unsigned long	offsetk = ((unsigned long) k) * ((unsigned long) nh) * ((unsigned long) m);
+			double			*ak = a + offsetk;
 			for (j = 0; j < ny; j++) {
-				double	*xi = g->x;
-				double	*dxi = g->dx;
+				double			*xi = g->x;
+				double			*dxi = g->dx;
+				unsigned long	offsetj = ((unsigned long) j) * ((unsigned long) nx) * ((unsigned long) m);
+				double			*aj = ak + offsetj;
 				if (g->z1) z1 = g->z1 + j * nx;
 				for (i = 0; i < nx; i++) {
-					double	*al = a + (k * nh + j * nx + i) * m;
+					double	*al = aj + i * m;
 					double	*xl = array->x;
 					double	*yl = array->y;
 					double	*zl = array->z;
@@ -119,12 +123,14 @@ kernel_matrix_set (double *a, const data_array *array, const grid *g, const vect
 double *
 kernel_matrix (const data_array *array, const grid *g, const vector3d *mgz, const vector3d *exf, const mgcal_func *f)
 {
-	int		m, n;
-	double	*a;
+	int				m, n;
+	double			*a;
+	unsigned long	size;
 
 	m = array->n;
 	n = g->n;
-	a = (double *) malloc (m * n * sizeof (double));
+	size = ((long) m) * ((long) n);
+	a = (double *) malloc (size * sizeof (double));
 	if (!a) error_and_exit ("kernel_matrix", "failed to allocate memory of *a.", __FILE__, __LINE__);
 	kernel_matrix_set (a, array, g, mgz, exf, f);
 	return a;
@@ -143,7 +149,7 @@ kernel_matrix_scattered_set (double *a, const data_array *array, const scattered
 
 #pragma omp parallel
 	{
-		int			i, j;
+		size_t		i, j;
 		vector3d	*obs = vector3d_new (0., 0., 0.);
 		source		*src = source_new (0., 0.);
 		if (exf) src->exf = vector3d_copy (exf);
@@ -170,12 +176,14 @@ kernel_matrix_scattered_set (double *a, const data_array *array, const scattered
 double *
 kernel_matrix_scattered (const data_array *array, const scattered *g, const vector3d *mgz, const vector3d *exf, const mgcal_func *f)
 {
-	int		m, n;
-	double	*a;
+	int				m, n;
+	double			*a;
+	unsigned long	size;
 
 	m = array->n;
 	n = g->n;
-	a = (double *) malloc (m * n * sizeof (double));
+	size = ((long) m) * ((long) n);
+	a = (double *) malloc (size * sizeof (double));
 	if (!a) error_and_exit ("kernel_matrix_scattered", "failed to allocate memory of *a.", __FILE__, __LINE__);
 	kernel_matrix_scattered_set (a, array, g, mgz, exf, f);
 	return a;

@@ -11,6 +11,7 @@ libmgcal_include_DATA =\
 	source.h\
 	calc.h\
 	kernel.h\
+	mapped.h\
 	io.h\
 	mgcal.h
 
