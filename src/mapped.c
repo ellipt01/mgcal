@@ -58,12 +58,11 @@ mapped_new (int id, int nobs, int nsrc, const char *dir)
 	psize = sysconf (_SC_PAGE_SIZE);
 #endif
 
-	/* page size for one layer kernel */
 	map->size = (map->nnz * sizeof (double) / psize + 1) * psize;
 
 	/* open mmap file */
-	if (dir) sprintf (map->fn, "%s/layer%05d.map", dir, id);
-	else sprintf (map->fn, "./layer%05d.map", id);
+	if (dir) sprintf (map->fn, "%s/data%05d.map", dir, id);
+	else sprintf (map->fn, "./data%05d.map", id);
 
 	map->fd = open (map->fn, O_RDWR | O_CREAT | O_TRUNC, 0666);
 	if (map->fd == -1) {
