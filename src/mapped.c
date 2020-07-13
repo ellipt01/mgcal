@@ -86,12 +86,14 @@ mapped_new (int id, int nobs, int nsrc, const char *dir)
 void
 mapped_free (mapped *map)
 {
-	if (map->fd != -1) {
-		int	stat = munmap (map->data, map->size);
-		if (stat == -1) error_and_exit ("mapped_free", "msync failed.", __FILE__, __LINE__);
-		close (map->fd);
+	if (map) {
+		if (map->fd != -1) {
+			int	stat = munmap (map->data, map->size);
+			if (stat == -1) error_and_exit ("mapped_free", "msync failed.", __FILE__, __LINE__);
+			close (map->fd);
+		}
+		free (map);
 	}
-	free (map);
 	return;
 }
 

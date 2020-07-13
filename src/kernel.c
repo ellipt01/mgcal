@@ -188,3 +188,85 @@ kernel_matrix_scattered (const data_array *array, const scattered *g, const vect
 	kernel_matrix_scattered_set (a, array, g, mgz, exf, f);
 	return a;
 }
+
+double *
+kernel_matrix_nth_grid (size_t n, const data_array *array, const grid *g, const vector3d *mgz, const vector3d *exf, const mgcal_func *f)
+{
+	int		m;
+	double	*a;
+
+	if (g->n <= n) error_and_exit ("kernel_matrix_nth_grid", "n exceeds number of grid.", __FILE__, __LINE__);
+	m = array->n;
+
+	a = (double *) malloc (m * sizeof (double));
+	{
+		size_t		i;
+//		double		*z1 = NULL;
+		vector3d	*obs = vector3d_new (0., 0., 0.);
+		vector3d	*grd = vector3d_new (0., 0., 0.);
+		vector3d	*dim = vector3d_new (0., 0., 0.);
+
+		source		*src = source_new (0., 0.);
+		if (exf) src->exf = vector3d_copy (exf);
+		source_append_item (src);
+		src->begin->pos = vector3d_new (0., 0., 0.);
+		src->begin->dim = vector3d_new (0., 0., 0.);
+		if (mgz) src->begin->mgz = vector3d_copy (mgz);
+
+		grid_get_nth (g, n, grd, dim);
+		vector3d_set (src->begin->pos, grd->x, grd->y, grd->z);
+		vector3d_set (src->begin->dim, dim->x, dim->y, dim->z);
+		vector3d_free (grd);
+		vector3d_free (dim);
+
+		for (i = 0; i < m; i++) {
+			vector3d_set (obs, array->x[i], array->y[i], array->z[i]);
+			a[i] = f->function (obs, src, f->parameter);
+		}
+		vector3d_free (obs);
+		source_free (src);
+	}
+	return a;
+}
+
+double *
+kernel_matrix_mth_site (size_t m, const data_array *array, const grid *g, const vector3d *mgz, const vector3d *exf, const mgcal_func *f)
+{
+	int		n;
+	double	*a;
+	double	xobs, yobs, zobs;
+
+	if (array->n <= m) error_and_exit ("kernel_matrix_mth_site", "m exceeds number of array.", __FILE__, __LINE__);
+	n = g->n;
+
+	xobs = array->x[m];
+	yobs = array->y[m];
+	zobs = array->z[m];
+	a = (double *) malloc (n * sizeof (double));
+	{
+		size_t		j;
+		vector3d	*obs = vector3d_new (xobs, yobs, zobs);
+		vector3d	*grd = vector3d_new (0., 0., 0.);
+		vector3d	*dim = vector3d_new (0., 0., 0.);
+
+		source		*src = source_new (0., 0.);
+		if (exf) src->exf = vector3d_copy (exf);
+		source_append_item (src);
+		src->begin->pos = vector3d_new (0., 0., 0.);
+		src->begin->dim = vector3d_new (0., 0., 0.);
+		if (mgz) src->begin->mgz = vector3d_copy (mgz);
+
+		for (j = 0; j < n; j++) {
+			grid_get_nth (g, j, grd, dim);
+			vector3d_set (src->begin->pos, grd->x, grd->y, grd->z);
+			vector3d_set (src->begin->dim, dim->x, dim->y, dim->z);
+			a[j] = f->function (obs, src, f->parameter);
+		}
+		vector3d_free (grd);
+		vector3d_free (dim);
+		vector3d_free (obs);
+		source_free (src);
+	}
+	return a;
+}
+

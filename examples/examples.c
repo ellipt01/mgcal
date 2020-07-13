@@ -64,5 +64,21 @@ main (void)
 		fclose (fp);
 	}
 
+	if ((fp = fopen ("kernel_nth_grid.data", "w"))) {
+		double	*a = example_kernel_nth_grid (nx, ny, nz, x, y, z, zobs);
+		int		i;
+		int		n = nx * ny * nz;
+		for (i = 0; i < n; i++) fprintf (fp, "%f\n", a[i]);
+		fclose (fp);
+	}
+
+	if ((fp = fopen ("kernel_mth_site.data", "w"))) {
+		double	*a = example_kernel_mth_site (nx, ny, nz, x, y, z, zobs);
+		int		i;
+		int		n = nx * ny * nz;
+		for (i = 0; i < n; i++) fprintf (fp, "%f\n", a[i]);
+		fclose (fp);
+	}
+
 	return EXIT_SUCCESS;
 }
