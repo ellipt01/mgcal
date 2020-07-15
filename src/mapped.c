@@ -8,6 +8,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
+#include <string.h>
 
 #include <unistd.h>
 #include <fcntl.h>
@@ -95,6 +96,37 @@ mapped_free (mapped *map)
 		free (map);
 	}
 	return;
+}
+
+mapped *
+mapped_fread (const char *fn, size_t m, size_t n, size_t nnz)
+{
+	long	psize;
+
+	mapped	*map = mapped_alloc ();
+
+	map->m = m;
+	map->n = n;
+	map->nnz = nnz;
+
+#ifdef BSD
+	psize = getpagesize ();
+#else
+	psize = sysconf (_SC_PAGE_SIZE);
+#endif
+
+	map->size = (map->nnz * sizeof (double) / psize + 1) * psize;
+
+	/* open mmap file */
+	strcpy (map->fn, fn);
+	map->fd = open (map->fn, O_RDWR);
+	if (map->fd == -1) {
+		char	msg[BUFSIZ];
+		sprintf (msg, "cannot open file %s.", map->fn);
+		error_and_exit ("mapped_new", msg, __FILE__, __LINE__);
+	}
+	map->data = (double *) mmap (NULL, map->size, PROT_READ | PROT_WRITE, MAP_SHARED, map->fd, 0);
+	return map;
 }
 
 mapped *
