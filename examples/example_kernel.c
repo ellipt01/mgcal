@@ -72,7 +72,7 @@ example_kernel (const int nx, const int ny, const int nz, const double x[], cons
 }
 
 double *
-example_kernel_nth_grid (const int nx, const int ny, const int nz, const double x[], const double y[], const double z[], const double zobs)
+example_kernel_jth_col (const int nx, const int ny, const int nz, const double x[], const double y[], const double z[], const double zobs)
 {
 	data_array	*array;
 	grid		*gobs;
@@ -98,7 +98,7 @@ example_kernel_nth_grid (const int nx, const int ny, const int nz, const double 
 		int		i, j;
 #pragma omp parallel for
 		for (j = 0; j < gsrc->n; j++) {
-			double	*aj = kernel_matrix_nth_grid (j, array, gsrc, mgz, exf, f);
+			double	*aj = kernel_matrix_jth_col (j, array, gsrc, mgz, exf, f);
 			for (i = 0; i < array->n; i++) a[i + j * array->n] = aj[i];
 			free (aj);
 		}
@@ -116,7 +116,7 @@ example_kernel_nth_grid (const int nx, const int ny, const int nz, const double 
 }
 
 double *
-example_kernel_mth_site (const int nx, const int ny, const int nz, const double x[], const double y[], const double z[], const double zobs)
+example_kernel_ith_row (const int nx, const int ny, const int nz, const double x[], const double y[], const double z[], const double zobs)
 {
 	data_array	*array;
 	grid		*gobs;
@@ -142,7 +142,7 @@ example_kernel_mth_site (const int nx, const int ny, const int nz, const double 
 		int		i, j;
 #pragma omp parallel for
 		for (i = 0; i < array->n; i++) {
-			double	*ai = kernel_matrix_mth_site (i, array, gsrc, mgz, exf, f);
+			double	*ai = kernel_matrix_ith_row (i, array, gsrc, mgz, exf, f);
 			for (j = 0; j < gsrc->n; j++) a[i + j * array->n] = ai[j];
 			free (ai);
 		}

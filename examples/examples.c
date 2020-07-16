@@ -65,7 +65,7 @@ main (void)
 	}
 
 	if ((fp = fopen ("kernel_nth_grid.data", "w"))) {
-		double	*a = example_kernel_nth_grid (nx, ny, nz, x, y, z, zobs);
+		double	*a = example_kernel_jth_col (nx, ny, nz, x, y, z, zobs);
 		int		i;
 		int		n = nx * ny * nz;
 		for (i = 0; i < n; i++) fprintf (fp, "%f\n", a[i]);
@@ -73,7 +73,7 @@ main (void)
 	}
 
 	if ((fp = fopen ("kernel_mth_site.data", "w"))) {
-		double	*a = example_kernel_mth_site (nx, ny, nz, x, y, z, zobs);
+		double	*a = example_kernel_ith_row (nx, ny, nz, x, y, z, zobs);
 		int		i;
 		int		n = nx * ny * nz;
 		for (i = 0; i < n; i++) fprintf (fp, "%f\n", a[i]);

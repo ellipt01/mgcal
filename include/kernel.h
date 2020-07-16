@@ -30,8 +30,8 @@ double		*kernel_matrix (const data_array *array, const grid *g, const vector3d *
 void		kernel_matrix_scattered_set (double *a, const data_array *array, const scattered *g, const vector3d *mgz, const vector3d *exf, const mgcal_func *f);
 double		*kernel_matrix_scattered (const data_array *array, const scattered *g, const vector3d *mgz, const vector3d *exf, const mgcal_func *f);
 
-double		*kernel_matrix_nth_grid (size_t n, const data_array *array, const grid *g, const vector3d *mgz, const vector3d *exf, const mgcal_func *f);
-double		*kernel_matrix_mth_site (size_t m, const data_array *array, const grid *g, const vector3d *mgz, const vector3d *exf, const mgcal_func *f);
+double		*kernel_matrix_jth_col (size_t n, const data_array *array, const grid *g, const vector3d *mgz, const vector3d *exf, const mgcal_func *f);
+double		*kernel_matrix_ith_row (size_t m, const data_array *array, const grid *g, const vector3d *mgz, const vector3d *exf, const mgcal_func *f);
 
 #ifdef __cplusplus
 }
